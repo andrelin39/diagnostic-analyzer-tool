@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>醫學診斷指標分析工具 v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F5F2EC; --bg2:#EDEAE2; --surface:#FFFFFF;
+  --ink:#1A1814; --ink2:#5C5850; --ink3:#9B9890;
+  --accent:#2B4D3A; --accent-light:#E8F0EB;
+  --blue:#1C3D5A; --blue-light:#E6EEF5;
+  --amber:#7A5C1A; --amber-light:#F5EFE0;
+  --red:#8B3A1C; --red-light:#F5EBE6;
+  --border:#D8D4CC; --border2:#C8C4BC;
+  --tp:#2B4D3A; --tp-bg:#E8F0EB;
+  --fp:#8B3A1C; --fp-bg:#F5EBE6;
+  --fn:#7A5C1A; --fn-bg:#F5EFE0;
+  --tn:#1C3D5A; --tn-bg:#E6EEF5;
+  --r:6px; --rl:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6;}
+
+/* Header */
+header{background:var(--ink);color:var(--bg);padding:18px 40px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+header h1{font-family:'Instrument Serif',serif;font-size:22px;font-weight:400;}
+header .sub{font-family:'DM Mono',monospace;font-size:11px;color:#888;letter-spacing:.06em;}
+.ver-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:99px;background:#333;color:#aaa;margin-left:auto;}
+
+/* Layout */
+.main{max-width:1100px;margin:0 auto;padding:32px 20px 60px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:22px 26px;margin-bottom:14px;}
+.card-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.step-num{width:20px;height:20px;background:var(--ink);color:var(--bg);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;}
+
+/* Upload */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--r);padding:26px 20px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;}
+.upload-zone:hover{background:var(--bg);border-color:var(--ink);}
+.upload-zone input{display:none;}
+.utext{font-size:14px;color:var(--ink2);}
+.utext strong{color:var(--ink);text-decoration:underline;cursor:pointer;}
+.uhint{font-size:12px;color:var(--ink3);margin-top:4px;}
+.finfo{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-top:8px;}
+.preview-wrap{margin-top:14px;overflow-x:auto;}
+.pnote{font-size:11px;color:var(--ink3);margin-bottom:5px;font-family:'DM Mono',monospace;}
+table.prev{width:100%;border-collapse:collapse;font-size:12px;}
+table.prev th{background:var(--bg2);padding:5px 10px;text-align:left;font-weight:500;color:var(--ink2);border-bottom:1px solid var(--border);}
+table.prev td{padding:4px 10px;border-bottom:1px solid var(--border);color:var(--ink);font-family:'DM Mono',monospace;}
+
+/* Pills */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.pill{font-size:12px;padding:4px 12px;border-radius:99px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;color:var(--ink2);transition:all .1s;font-family:'DM Mono',monospace;}
+.pill:hover{border-color:var(--ink);color:var(--ink);}
+.pill.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.pill.pos{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pill.grp{background:var(--blue-light);color:var(--blue);border-color:#a0b8cc;}
+.pill.grp.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* Two col grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:600px){.g2{grid-template-columns:1fr;}}
+.field label{font-size:12px;font-weight:500;color:var(--ink2);display:block;margin-bottom:6px;font-family:'DM Mono',monospace;letter-spacing:.02em;}
+.hint{font-size:11px;color:var(--ink3);margin-top:3px;}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+
+/* Buttons */
+.btn{padding:9px 22px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--ink);transition:all .15s;font-family:'DM Sans',sans-serif;}
+.btn:hover{background:var(--bg2);}
+.btn-primary{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.btn-primary:hover{opacity:.85;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.run-row{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+
+/* Tab bar */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.tab{font-family:'DM Mono',monospace;font-size:12px;padding:8px 16px;cursor:pointer;color:var(--ink3);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--ink);border-bottom-color:var(--ink);}
+
+/* 2x2 table */
+table.ct{border-collapse:collapse;margin:0 auto;}
+table.ct th,table.ct td{border:1px solid var(--border2);padding:10px 18px;text-align:center;}
+.ch{background:var(--bg2);font-weight:500;color:var(--ink2);font-size:12px;font-family:'DM Mono',monospace;}
+.tp-c{background:var(--tp-bg);color:var(--tp);font-weight:500;font-family:'DM Mono',monospace;}
+.fp-c{background:var(--fp-bg);color:var(--fp);font-weight:500;font-family:'DM Mono',monospace;}
+.fn-c{background:var(--fn-bg);color:var(--fn);font-weight:500;font-family:'DM Mono',monospace;}
+.tn-c{background:var(--tn-bg);color:var(--tn);font-weight:500;font-family:'DM Mono',monospace;}
+.tot{background:var(--bg2);font-weight:500;font-family:'DM Mono',monospace;color:var(--ink2);}
+.ct-big{font-size:20px;display:block;}
+.ct-sub{font-size:10px;font-weight:400;opacity:.65;display:block;margin-top:1px;}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:12px;}
+.ldot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+/* Metrics grid */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+.mc{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;}
+.mc.hl{background:var(--blue-light);border-color:#a0b8cc;}
+.mc-name{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.05em;color:var(--ink3);text-transform:uppercase;margin-bottom:5px;}
+.mc.hl .mc-name{color:var(--blue);}
+.mc-val{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);line-height:1.1;}
+.mc.hl .mc-val{color:var(--blue);}
+.mc-form{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);margin-top:3px;}
+.mc.hl .mc-form{color:#6a8fa8;}
+.kbox{background:var(--accent-light);border:1px solid #c2d6c9;border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--accent);line-height:1.75;}
+
+/* Subgroup comparison table */
+.sg-wrap{overflow-x:auto;margin-top:4px;}
+table.sg{border-collapse:collapse;width:100%;font-size:13px;}
+table.sg thead th{background:var(--ink);color:var(--bg);padding:8px 12px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;font-weight:500;text-align:center;white-space:nowrap;position:sticky;top:0;}
+table.sg thead th:first-child{text-align:left;}
+table.sg tbody tr:nth-child(even){background:var(--bg2);}
+table.sg tbody tr:hover{background:var(--blue-light);}
+table.sg td{padding:7px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--ink2);}
+table.sg td:first-child{text-align:left;font-weight:500;color:var(--ink);font-size:13px;}
+table.sg td.grp-head{background:var(--bg2);font-weight:500;color:var(--ink2);font-size:11px;letter-spacing:.04em;text-transform:uppercase;border-top:1px solid var(--border2);}
+.bar-cell{display:flex;align-items:center;gap:6px;}
+.bar{height:8px;border-radius:4px;background:var(--accent);flex-shrink:0;}
+.bar.sens{background:#2B4D3A;}
+.bar.spec{background:#1C3D5A;}
+.bar.acc{background:#7A5C1A;}
+
+/* Grouping config */
+.grp-config{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-top:12px;}
+.grp-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.grp-tag{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--blue-light);color:var(--blue);border:1px solid #a0b8cc;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:6px;}
+.grp-tag .rm{cursor:pointer;opacity:.6;font-size:14px;line-height:1;}
+.grp-tag .rm:hover{opacity:1;}
+
+/* Filter panel */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.filter-select{padding:5px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;background:var(--surface);color:var(--ink);font-family:'DM Mono',monospace;cursor:pointer;}
+.filter-select:focus{outline:none;border-color:var(--ink);}
+
+/* Sticky col selector */
+.combo-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.combo-chip{font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);cursor:pointer;color:var(--ink2);transition:all .1s;font-family:'DM Mono',monospace;}
+.combo-chip:hover{border-color:var(--ink);}
+.combo-chip.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+
+
+
+/* Alert */
+.alert{padding:10px 14px;border-radius:var(--r);background:var(--amber-light);color:var(--amber);font-size:13px;margin-top:8px;border:1px solid #e0d0b0;}
+
+/* Hidden / show */
+.hidden{display:none!important;}
+
+/* Print */
+@media print{
+  .btn,.run-row,.export-row,#uploadSection,.tab-bar,.filter-bar,.combo-chips,.grp-config{display:none;}
+  .card{break-inside:avoid;}
+  .hidden{display:none!important;}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+footer{text-align:center;font-size:11px;color:var(--ink3);padding:18px;font-family:'DM Mono',monospace;border-top:1px solid var(--border);margin-top:40px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>醫學診斷指標分析工具</h1>
+  <span class="sub">Diagnostic Test Accuracy Analyzer · Subgroup Edition</span>
+  <span class="ver-badge">v2.0</span>
+</header>
+
+<div class="main">
+
+<!-- ── Step 1: Upload ── -->
+<div class="card" id="uploadSection">
+  <div class="card-title"><span class="step-num">1</span>上傳資料檔案</div>
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" onchange="handleFile(event)">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="margin:0 auto 10px;display:block;opacity:.3;">
+      <path d="M18 4v20M10 12l8-8 8 8M6 28h24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="utext">拖曳或 <strong>點擊上傳</strong> CSV / TSV / Excel 檔案</div>
+    <div class="uhint">支援 .csv · .tsv · .xlsx · .xls，第一列需為欄位標頭</div>
+    <div class="finfo" id="fileInfo"></div>
+  </div>
+  <div id="previewWrap" class="hidden">
+    <div class="preview-wrap">
+      <div class="pnote">▸ 資料預覽（前 5 筆）</div>
+      <table class="prev" id="previewTable"></table>
+    </div>
+  </div>
+  <div id="noDataAlert" class="alert hidden">⚠ 無法解析，請確認格式為 CSV / TSV / Excel（.xlsx/.xls），且第一列為欄位標頭。</div>
+</div>
+
+<!-- ── Step 2: Configure ── -->
+<div class="card hidden" id="configSection">
+  <div class="card-title"><span class="step-num">2</span>設定欄位、陽性條件與分組變數</div>
+
+  <!-- Core columns -->
+  <div class="g2">
+    <div class="field">
+      <label>金標準 (Reference Standard)</label>
+      <div class="pills" id="refPills"></div>
+    </div>
+    <div class="field">
+      <label>測試 / 診斷工具 (Index Test)</label>
+      <div class="pills" id="testPills"></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="valueConfig" class="hidden">
+    <div class="g2">
+      <div class="field">
+        <label>金標準「陽性」值</label>
+        <div class="pills" id="refPosPills"></div>
+        <div class="hint">點選設為陽性，其餘自動歸為陰性</div>
+      </div>
+      <div class="field">
+        <label>測試「陽性」值</label>
+        <div class="pills" id="testPosPills"></div>
+        <div class="hint">點選設為陽性，其餘自動歸為陰性</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Grouping variables -->
+    <div class="field">
+      <label>分組變數（可選，可多選）</label>
+      <div class="hint" style="margin-bottom:6px;">選擇要拆分的欄位，例如：醫師、判讀方式、儀器等。可同時選多個，系統將計算所有組合。</div>
+      <div class="pills" id="grpPills"></div>
+    </div>
+
+    <div id="selectedGrpDisplay" class="hidden" style="margin-top:10px;">
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:6px;font-family:'DM Mono',monospace;">已選分組：</div>
+      <div id="grpTagsRow" class="grp-row"></div>
+    </div>
+
+    <div class="run-row">
+      <button class="btn" onclick="resetConfig()">重設</button>
+      <button class="btn btn-primary" onclick="runAnalysis()">執行分析 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Step 3: Results ── -->
+<div id="resultsSection" class="hidden">
+
+  <!-- Tab bar -->
+  <div class="card" style="padding-bottom:0;padding-top:18px;">
+    <div class="tab-bar" id="tabBar">
+      <div class="tab active" onclick="showTab('overall')" id="tab-overall">整體分析</div>
+      <div class="tab hidden" onclick="showTab('subgroup')" id="tab-subgroup">分組比較</div>
+    </div>
+
+    <!-- Overall tab -->
+    <div id="pane-overall">
+      <div style="margin-bottom:18px;">
+        <div class="card-title" style="margin-bottom:12px;"><span class="step-num">3</span>2 × 2 列聯表（整體）</div>
+        <div style="overflow-x:auto;">
+          <table class="ct" id="ctMain">
+            <thead>
+              <tr>
+                <th class="ch" style="border:none;background:transparent;"></th>
+                <th class="ch" colspan="2">金標準 (Reference Standard)</th>
+                <th class="ch">合計</th>
+              </tr>
+              <tr>
+                <th class="ch">測試結果</th>
+                <th class="ch">陽性 (Disease+)</th>
+                <th class="ch">陰性 (Disease−)</th>
+                <th class="ch"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th class="ch">陽性 (Test+)</th>
+                <td class="tp-c"><span class="ct-big" id="m-tp">—</span><span class="ct-sub">True Positive</span></td>
+                <td class="fp-c"><span class="ct-big" id="m-fp">—</span><span class="ct-sub">False Positive</span></td>
+                <td class="tot" id="m-r1">—</td>
+              </tr>
+              <tr>
+                <th class="ch">陰性 (Test−)</th>
+                <td class="fn-c"><span class="ct-big" id="m-fn">—</span><span class="ct-sub">False Negative</span></td>
+                <td class="tn-c"><span class="ct-big" id="m-tn">—</span><span class="ct-sub">True Negative</span></td>
+                <td class="tot" id="m-r2">—</td>
+              </tr>
+              <tr>
+                <th class="ch">合計</th>
+                <td class="tot" id="m-c1">—</td>
+                <td class="tot" id="m-c2">—</td>
+                <td class="tot" id="m-n" style="font-size:15px;">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <span class="ldot" style="background:var(--tp-bg);border:1px solid var(--tp);"></span>TP 真陽性 &nbsp;
+          <span class="ldot" style="background:var(--fp-bg);border:1px solid var(--fp);"></span>FP 偽陽性 &nbsp;
+          <span class="ldot" style="background:var(--fn-bg);border:1px solid var(--fn);"></span>FN 偽陰性 &nbsp;
+          <span class="ldot" style="background:var(--tn-bg);border:1px solid var(--tn);"></span>TN 真陰性
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-title"><span class="step-num">4</span>診斷指標（整體）</div>
+      <div class="mgrid" id="metricsMain"></div>
+      <div id="kappaMain" class="kbox"></div>
+    </div>
+
+    <!-- Subgroup tab -->
+    <div id="pane-subgroup" class="hidden">
+      <div style="margin-bottom:14px;">
+        <div class="card-title"><span class="step-num">3</span>分組診斷指標比較</div>
+
+        <!-- Combo selector -->
+        <div style="font-size:12px;color:var(--ink2);margin-bottom:8px;font-family:'DM Mono',monospace;">選擇分組方式：</div>
+        <div class="combo-chips" id="comboChips"></div>
+
+        <!-- Comparison table -->
+        <div class="sg-wrap">
+          <table class="sg" id="sgTable">
+            <thead id="sgHead"></thead>
+            <tbody id="sgBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding-bottom:18px;"></div>
+  </div>
+
+  <!-- Formula reference -->
+  <div class="card">
+    <div class="card-title">公式說明</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 28px;font-size:12px;">
+      <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">Sensitivity</span><span style="color:var(--ink2);">= TP / (TP+FN)</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">Specificity</span><span style="color:var(--ink2);">= TN / (TN+FP)</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">PPV</span><span style="color:var(--ink2);">= TP / (TP+FP)</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">NPV</span><span style="color:var(--ink2);">= TN / (TN+FN)</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">Accuracy</span><span style="color:var(--ink2);">= (TP+TN) / N</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">LR+</span><span style="color:var(--ink2);">= Sensitivity / (1−Specificity)</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">LR−</span><span style="color:var(--ink2);">= (1−Sensitivity) / Specificity</span></div>
+      <div style="display:flex;gap:8px;padding:4px 0;"><span style="font-family:'DM Mono',monospace;font-weight:500;min-width:90px;">Cohen's κ</span><span style="color:var(--ink2);">= (Po−Pe) / (1−Pe)</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--ink3);margin-top:10px;font-family:'DM Mono',monospace;">Kappa 判讀：Landis &amp; Koch (1977). Biometrics 33(1):159–174</div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px;">
+    <button class="btn" onclick="copyResults()">📋 複製整體結果</button>
+    <button class="btn btn-primary" onclick="window.print()">列印 / PDF</button>
+  </div>
+
+</div><!-- end resultsSection -->
+
+</div><!-- end main -->
+
+<footer>Diagnostic Test Accuracy Analyzer v2 &nbsp;·&nbsp; 整體 + 分組分析 &nbsp;·&nbsp; Sens · Spec · PPV · NPV · LR± · Cohen's κ</footer>
+
+<script>
+// ── State ─────────────────────────────────────────────
+let data=[], cols=[];
+let refCol=null, testCol=null;
+let refPos=new Set(), testPos=new Set();
+let grpCols=[];       // selected grouping columns
+let activeCombo=null; // currently displayed combo key
+let allResults={};    // key -> {overall, subgroups}
+
+// ── File handling ──────────────────────────────────────
+function handleFile(e){
+  const f=e.target.files[0]; if(!f) return;
+  const ext=f.name.split('.').pop().toLowerCase();
+  if(ext==='xlsx'||ext==='xls'){
+    if(typeof XLSX==='undefined'){
+      document.getElementById('noDataAlert').textContent='⚠ Excel 解析套件尚未載入，請稍候再試。';
+      document.getElementById('noDataAlert').classList.remove('hidden'); return;
+    }
+    const r=new FileReader();
+    r.onload=ev=>parseXLSX(ev.target.result, f.name, f.size);
+    r.readAsArrayBuffer(f);
+  } else {
+    const r=new FileReader();
+    r.onload=ev=>parseCSV(ev.target.result, f.name, f.size);
+    r.readAsText(f,'UTF-8');
+  }
+}
+const uz=document.getElementById('uploadZone');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.style.background='var(--bg2)';});
+uz.addEventListener('dragleave',()=>{uz.style.background='';});
+uz.addEventListener('drop',e=>{
+  e.preventDefault();uz.style.background='';
+  const f=e.dataTransfer.files[0];
+  if(f) handleFile({target:{files:[f]}});
+});
+
+function parseXLSX(buf, name, size){
+  document.getElementById('noDataAlert').classList.add('hidden');
+  try {
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    if(!rows.length){document.getElementById('noDataAlert').classList.remove('hidden');return;}
+    cols=Object.keys(rows[0]);
+    data=rows.map(r=>{const o={};cols.forEach(c=>o[c]=String(r[c]??'').trim());return o;})
+             .filter(r=>Object.values(r).some(v=>v!==''));
+    if(!data.length){document.getElementById('noDataAlert').classList.remove('hidden');return;}
+    document.getElementById('fileInfo').textContent=name+'  ('+(size/1024).toFixed(1)+' KB · '+data.length+' 筆，工作表：'+wb.SheetNames[0]+')';
+    renderPreview(); renderConfig();
+  } catch(err){
+    document.getElementById('noDataAlert').textContent='⚠ Excel 解析失敗：'+err.message;
+    document.getElementById('noDataAlert').classList.remove('hidden');
+  }
+}
+
+function parseCSV(txt, name, size){
+  document.getElementById('noDataAlert').classList.add('hidden');
+  const delim = (txt.split('\t').length > txt.split(',').length) ? '\t' : ',';
+  const lines=txt.trim().split(/\r?\n/);
+  if(lines.length<2){document.getElementById('noDataAlert').classList.remove('hidden');return;}
+  cols=lines[0].split(delim).map(c=>c.replace(/^"|"$/g,'').trim());
+  data=lines.slice(1).map(l=>{
+    const v=splitLine(l,delim); const o={};
+    cols.forEach((c,i)=>o[c]=(v[i]??'').trim()); return o;
+  }).filter(r=>Object.values(r).some(v=>v!==''));
+  if(!data.length){document.getElementById('noDataAlert').classList.remove('hidden');return;}
+  document.getElementById('fileInfo').textContent=name+'  ('+(size/1024).toFixed(1)+' KB · '+data.length+' 筆)';
+  renderPreview(); renderConfig();
+}
+
+function splitLine(l,d){
+  const res=[]; let cur=''; let q=false;
+  for(let i=0;i<l.length;i++){
+    if(l[i]==='"'){q=!q;continue;}
+    if(l[i]===d&&!q){res.push(cur);cur='';}else cur+=l[i];
+  } res.push(cur); return res;
+}
+
+function renderPreview(){
+  let h='<tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>';
+  data.slice(0,5).forEach(r=>{h+='<tr>'+cols.map(c=>'<td>'+esc(r[c]??'')+'</td>').join('')+'</tr>';});
+  document.getElementById('previewTable').innerHTML=h;
+  document.getElementById('previewWrap').classList.remove('hidden');
+}
+
+function renderConfig(){
+  document.getElementById('configSection').classList.remove('hidden');
+  const mk=(id,type,cls='')=>{ document.getElementById(id).innerHTML=cols.map(c=>`<span class="pill ${cls}" onclick="selectCol('${type}','${esc(c)}')" data-col="${esc(c)}" data-type="${type}">${esc(c)}</span>`).join(''); };
+  mk('refPills','ref'); mk('testPills','test');
+  mk('grpPills','grp','grp');
+  refCol=null;testCol=null;refPos.clear();testPos.clear();grpCols=[];
+  document.getElementById('valueConfig').classList.add('hidden');
+  document.getElementById('resultsSection').classList.add('hidden');
+  updateGrpDisplay();
+}
+
+function selectCol(type,col){
+  if(type==='ref'){
+    refCol=col;
+    document.querySelectorAll('#refPills .pill').forEach(p=>p.classList.toggle('active',p.dataset.col===col));
+    refPos.clear(); renderValuePills();
+  } else if(type==='test'){
+    testCol=col;
+    document.querySelectorAll('#testPills .pill').forEach(p=>p.classList.toggle('active',p.dataset.col===col));
+    testPos.clear(); renderValuePills();
+  } else if(type==='grp'){
+    const el=document.querySelector(`#grpPills .pill[data-col="${col}"]`);
+    if(grpCols.includes(col)){
+      grpCols=grpCols.filter(c=>c!==col);
+      el.classList.remove('active');
+    } else {
+      grpCols.push(col);
+      el.classList.add('active');
+    }
+    updateGrpDisplay();
+  }
+  if(refCol&&testCol) document.getElementById('valueConfig').classList.remove('hidden');
+}
+
+function renderValuePills(){
+  if(!refCol||!testCol) return;
+  const rUniq=[...new Set(data.map(r=>r[refCol]).filter(v=>v!==''))].sort();
+  const tUniq=[...new Set(data.map(r=>r[testCol]).filter(v=>v!==''))].sort();
+  document.getElementById('refPosPills').innerHTML=rUniq.map(v=>`<span class="pill" onclick="togglePos('ref','${esc(v)}')" id="rp-${esc(v)}">${esc(v)}</span>`).join('');
+  document.getElementById('testPosPills').innerHTML=tUniq.map(v=>`<span class="pill" onclick="togglePos('test','${esc(v)}')" id="tp2-${esc(v)}">${esc(v)}</span>`).join('');
+}
+
+function togglePos(type,val){
+  if(type==='ref'){
+    if(refPos.has(val)){refPos.delete(val);document.getElementById('rp-'+val).classList.remove('pos');}
+    else{refPos.add(val);document.getElementById('rp-'+val).classList.add('pos');}
+  }else{
+    if(testPos.has(val)){testPos.delete(val);document.getElementById('tp2-'+val).classList.remove('pos');}
+    else{testPos.add(val);document.getElementById('tp2-'+val).classList.add('pos');}
+  }
+}
+
+function updateGrpDisplay(){
+  const disp=document.getElementById('selectedGrpDisplay');
+  const row=document.getElementById('grpTagsRow');
+  if(grpCols.length===0){disp.classList.add('hidden');return;}
+  disp.classList.remove('hidden');
+  row.innerHTML=grpCols.map(c=>`<span class="grp-tag">${esc(c)}<span class="rm" onclick="removeGrp('${esc(c)}')">×</span></span>`).join('');
+}
+
+function removeGrp(col){
+  grpCols=grpCols.filter(c=>c!==col);
+  document.querySelectorAll(`#grpPills .pill`).forEach(p=>{if(p.dataset.col===col) p.classList.remove('active');});
+  updateGrpDisplay();
+}
+
+function resetConfig(){
+  document.getElementById('configSection').classList.remove('hidden');
+  renderConfig();
+}
+
+// ── Analysis ───────────────────────────────────────────
+function calc(rows){
+  let TP=0,FP=0,FN=0,TN=0;
+  rows.forEach(r=>{
+    const rp=refPos.has(r[refCol]), tp=testPos.has(r[testCol]);
+    if(tp&&rp)TP++; else if(tp&&!rp)FP++;
+    else if(!tp&&rp)FN++; else TN++;
+  });
+  const N=TP+FP+FN+TN;
+  const sens=TP/(TP+FN), spec=TN/(TN+FP);
+  const ppv=TP/(TP+FP), npv=TN/(TN+FN);
+  const acc=(TP+TN)/N;
+  const lrp=sens/(1-spec), lrn=(1-sens)/spec;
+  const Po=(TP+TN)/N;
+  const Pe=((TP+FP)/N)*((TP+FN)/N)+((FN+TN)/N)*((FP+TN)/N);
+  const kap=(Po-Pe)/(1-Pe);
+  return {TP,FP,FN,TN,N,sens,spec,ppv,npv,acc,lrp,lrn,kap};
+}
+
+function kappaLabel(k){
+  if(!isFinite(k)) return '—';
+  if(k<0) return 'Poor';
+  if(k<0.2) return 'Slight';
+  if(k<0.4) return 'Fair';
+  if(k<0.6) return 'Moderate';
+  if(k<0.8) return 'Substantial';
+  return 'Almost Perfect';
+}
+function kappaLabelZH(k){
+  if(!isFinite(k)) return '—';
+  if(k<0) return '一致性差';
+  if(k<0.2) return '一致性極低';
+  if(k<0.4) return '一致性尚可';
+  if(k<0.6) return '一致性中等';
+  if(k<0.8) return '一致性良好';
+  return '一致性極佳';
+}
+
+// Get all unique combos for a set of grouping columns
+function getGroups(rows, gcols){
+  if(gcols.length===0) return [{key:'(全部)',label:'全部',rows}];
+  const map={};
+  rows.forEach(r=>{
+    const keyParts=gcols.map(c=>c+'='+r[c]);
+    const k=keyParts.join(' | ');
+    if(!map[k]) map[k]={label:k, parts:keyParts, vals:gcols.map(c=>r[c]), rows:[]};
+    map[k].rows.push(r);
+  });
+  return Object.values(map).sort((a,b)=>a.label.localeCompare(b.label));
+}
+
+// All non-empty subsets of grpCols (power set minus empty)
+function powerSet(arr){
+  const res=[];
+  for(let i=1;i<(1<<arr.length);i++){
+    const sub=arr.filter((_,j)=>(i>>j)&1);
+    res.push(sub);
+  }
+  return res;
+}
+
+function runAnalysis(){
+  if(!refCol||!testCol){alert('請先選擇金標準與測試欄位。');return;}
+  if(!refPos.size||!testPos.size){alert('請分別選擇金標準與測試的「陽性」值。');return;}
+
+  // Overall
+  const overall=calc(data);
+  fillMainCT(overall);
+  fillMainMetrics(overall);
+
+  // Build all combo results
+  allResults={};
+  if(grpCols.length>0){
+    const combos=powerSet(grpCols);
+    combos.forEach(combo=>{
+      const key=combo.join(' × ');
+      const groups=getGroups(data,combo);
+      allResults[key]=groups.map(g=>({...calc(g.rows),label:g.label,vals:g.vals,cols:combo,n:g.rows.length}));
+    });
+    // Build combo chips
+    buildComboChips(Object.keys(allResults));
+    // Show first combo
+    const firstKey=Object.keys(allResults)[0];
+    renderSubgroupTable(firstKey);
+    document.getElementById('tab-subgroup').classList.remove('hidden');
+  } else {
+    document.getElementById('tab-subgroup').classList.add('hidden');
+  }
+
+  document.getElementById('resultsSection').classList.remove('hidden');
+  showTab('overall');
+  document.getElementById('resultsSection').scrollIntoView({behavior:'smooth',block:'start'});
+  window._overall=overall;
+}
+
+function buildComboChips(keys){
+  const bar=document.getElementById('comboChips');
+  bar.innerHTML=keys.map((k,i)=>`<span class="combo-chip${i===0?' active':''}" onclick="selectCombo('${esc(k)}')" id="chip-${esc(k)}">${esc(k)}</span>`).join('');
+}
+
+function selectCombo(key){
+  document.querySelectorAll('.combo-chip').forEach(c=>c.classList.toggle('active',c.id==='chip-'+key));
+  renderSubgroupTable(key);
+}
+
+function renderSubgroupTable(key){
+  activeCombo=key;
+  const rows=allResults[key];
+  const gcols=rows[0].cols;
+  const head=document.getElementById('sgHead');
+  const body=document.getElementById('sgBody');
+
+  // Build header
+  let hHtml='<tr>';
+  gcols.forEach(c=>{ hHtml+=`<th>${esc(c)}</th>`; });
+  hHtml+=`<th>N</th><th>TP</th><th>FP</th><th>FN</th><th>TN</th>
+    <th>Sensitivity</th><th>Specificity</th><th>PPV</th><th>NPV</th>
+    <th>Accuracy</th><th>LR+</th><th>LR−</th><th>Cohen's κ</th></tr>`;
+  head.innerHTML=hHtml;
+
+  // Build body
+  const pct=v=>isFinite(v)?(v*100).toFixed(1)+'%':'—';
+  const d2=v=>isFinite(v)?v.toFixed(2):'—';
+  const d3=v=>isFinite(v)?v.toFixed(3):'—';
+
+  let bHtml='';
+  rows.forEach(r=>{
+    // Label cells for each grouping col
+    const labelCells = gcols.length===1
+      ? `<td>${esc(r.label)}</td>`
+      : (r.vals||[]).map(v=>`<td>${esc(v)}</td>`).join('');
+
+    bHtml+=`<tr>
+      ${labelCells}
+      <td>${r.N}</td>
+      <td style="color:var(--tp)">${r.TP}</td>
+      <td style="color:var(--fp)">${r.FP}</td>
+      <td style="color:var(--fn)">${r.FN}</td>
+      <td style="color:var(--tn)">${r.TN}</td>
+      <td>${pct(r.sens)}</td>
+      <td>${pct(r.spec)}</td>
+      <td>${pct(r.ppv)}</td>
+      <td>${pct(r.npv)}</td>
+      <td>${pct(r.acc)}</td>
+      <td>${d2(r.lrp)}</td>
+      <td>${d3(r.lrn)}</td>
+      <td title="${kappaLabelZH(r.kap)} (${kappaLabel(r.kap)})">${d3(r.kap)}&nbsp;<span style="font-size:10px;color:var(--ink3);">${kappaLabel(r.kap)}</span></td>
+    </tr>`;
+  });
+
+  // Overall row at bottom
+  const ov=window._overall||calc(data);
+  const ovCells=gcols.map(()=>`<td style="color:var(--ink3);font-style:italic;">全部</td>`).join('');
+  bHtml+=`<tr style="border-top:2px solid var(--border2);">
+    ${ovCells}
+    <td><strong>${ov.N}</strong></td>
+    <td style="color:var(--tp)"><strong>${ov.TP}</strong></td>
+    <td style="color:var(--fp)"><strong>${ov.FP}</strong></td>
+    <td style="color:var(--fn)"><strong>${ov.FN}</strong></td>
+    <td style="color:var(--tn)"><strong>${ov.TN}</strong></td>
+    <td><strong>${pct(ov.sens)}</strong></td>
+    <td><strong>${pct(ov.spec)}</strong></td>
+    <td><strong>${pct(ov.ppv)}</strong></td>
+    <td><strong>${pct(ov.npv)}</strong></td>
+    <td><strong>${pct(ov.acc)}</strong></td>
+    <td><strong>${d2(ov.lrp)}</strong></td>
+    <td><strong>${d3(ov.lrn)}</strong></td>
+    <td><strong>${d3(ov.kap)}</strong>&nbsp;<span style="font-size:10px;color:#aaa;">${kappaLabel(ov.kap)}</span></td>
+  </tr>`;
+
+  body.innerHTML=bHtml;
+}
+
+function fillMainCT(r){
+  document.getElementById('m-tp').textContent=r.TP;
+  document.getElementById('m-fp').textContent=r.FP;
+  document.getElementById('m-fn').textContent=r.FN;
+  document.getElementById('m-tn').textContent=r.TN;
+  document.getElementById('m-r1').textContent=r.TP+r.FP;
+  document.getElementById('m-r2').textContent=r.FN+r.TN;
+  document.getElementById('m-c1').textContent=r.TP+r.FN;
+  document.getElementById('m-c2').textContent=r.FP+r.TN;
+  document.getElementById('m-n').textContent='N = '+r.N;
+}
+
+function fillMainMetrics(r){
+  const pct=v=>isFinite(v)?(v*100).toFixed(1)+'%':'—';
+  const d2=v=>isFinite(v)?v.toFixed(2):'—';
+  const d3=v=>isFinite(v)?v.toFixed(3):'—';
+  const ms=[
+    {name:'Sensitivity',val:pct(r.sens),f:'TP/(TP+FN)',hl:false},
+    {name:'Specificity',val:pct(r.spec),f:'TN/(TN+FP)',hl:false},
+    {name:'PPV',val:pct(r.ppv),f:'TP/(TP+FP)',hl:false},
+    {name:'NPV',val:pct(r.npv),f:'TN/(TN+FN)',hl:false},
+    {name:'Accuracy',val:pct(r.acc),f:'(TP+TN)/N',hl:true},
+    {name:'LR+',val:d2(r.lrp),f:'Sens/(1−Spec)',hl:false},
+    {name:'LR−',val:d3(r.lrn),f:'(1−Sens)/Spec',hl:false},
+    {name:"Cohen's κ",val:d3(r.kap),f:'(Po−Pe)/(1−Pe)',hl:true},
+  ];
+  document.getElementById('metricsMain').innerHTML=ms.map(m=>
+    `<div class="mc${m.hl?' hl':''}"><div class="mc-name">${m.name}</div><div class="mc-val">${m.val}</div><div class="mc-form">${m.f}</div></div>`
+  ).join('');
+  document.getElementById('kappaMain').innerHTML=
+    `<strong>Cohen's Kappa 一致性判讀</strong><br>
+    κ = ${d3(r.kap)} → <strong>${kappaLabelZH(r.kap)} (${kappaLabel(r.kap)})</strong>（Landis &amp; Koch, 1977）<br>
+    <span style="font-size:12px;opacity:.75;">N = ${r.N}；陽性疾病 ${r.TP+r.FN} 筆；陰性疾病 ${r.FP+r.TN} 筆</span>`;
+}
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.id==='tab-'+t));
+  document.getElementById('pane-overall').classList.toggle('hidden',t!=='overall');
+  document.getElementById('pane-subgroup').classList.toggle('hidden',t!=='subgroup');
+}
+
+function copyResults(){
+  const r=window._overall; if(!r) return;
+  const pct=v=>isFinite(v)?(v*100).toFixed(1)+'%':'—';
+  const d3=v=>isFinite(v)?v.toFixed(3):'—';
+  let txt=`=== 整體 2×2 列聯表 ===\n            Disease+  Disease-  Total\nTest+       TP=${r.TP}    FP=${r.FP}    ${r.TP+r.FP}\nTest-       FN=${r.FN}    TN=${r.TN}    ${r.FN+r.TN}\nTotal       ${r.TP+r.FN}       ${r.FP+r.TN}       N=${r.N}\n\n=== 整體診斷指標 ===\nSensitivity : ${pct(r.sens)}\nSpecificity : ${pct(r.spec)}\nPPV         : ${pct(r.ppv)}\nNPV         : ${pct(r.npv)}\nAccuracy    : ${pct(r.acc)}\nLR+         : ${isFinite(r.lrp)?r.lrp.toFixed(2):'—'}\nLR-         : ${d3(r.lrn)}\nCohen's κ   : ${d3(r.kap)}  (${kappaLabelZH(r.kap)})\n`;
+  if(activeCombo&&allResults[activeCombo]){
+    txt+=`\n=== 分組比較：${activeCombo} ===\n`;
+    allResults[activeCombo].forEach(sg=>{
+      txt+=`\n[${sg.label}]  N=${sg.N}\n  Sens=${pct(sg.sens)}  Spec=${pct(sg.spec)}  PPV=${pct(sg.ppv)}  NPV=${pct(sg.npv)}  Acc=${pct(sg.acc)}  LR+=${isFinite(sg.lrp)?sg.lrp.toFixed(2):'—'}  LR-=${d3(sg.lrn)}  κ=${d3(sg.kap)}\n`;
+    });
+  }
+  navigator.clipboard.writeText(txt).then(()=>alert('結果已複製到剪貼簿！'));
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</body>
+</html>
