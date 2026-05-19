@@ -8,133 +8,205 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --ink:#1a1a2e;--paper:#faf9f6;--accent:#2563eb;--al:#dbeafe;--ad:#1e40af;
-  --muted:#6b7280;--border:#e5e5e5;--card:#fff;
+  --muted:#6b7280;--border:#e5e5e5;--card:#fff;--bg2:#f3f4f6;
   --ok:#16a34a;--ok-l:#dcfce7;--warn:#d97706;--warn-l:#fef3c7;--err:#dc2626;--err-l:#fee2e2;
-  --shsm:0 1px 3px rgba(0,0,0,.06);--shmd:0 4px 16px rgba(0,0,0,.08);
-  --radius:10px;
+  --sh:0 1px 3px rgba(0,0,0,.06);--r:10px;
   --serif:'Source Serif 4',Georgia,serif;
   --sans:'DM Sans',system-ui,sans-serif;
   --mono:'JetBrains Mono',monospace;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.7;font-size:16px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased}
 
-/* ── Header ── */
-header{background:rgba(250,249,246,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:.75rem 2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink)}
-.brand-logo{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem}
-.brand-text{font-family:var(--serif);font-weight:700;font-size:1.05rem}
+header{background:rgba(250,249,246,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:.7rem 2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--ink)}
+.brand-logo{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem}
+.brand-text{font-family:var(--serif);font-weight:700;font-size:1rem}
 .brand-text span{color:var(--accent)}
-.hdr-right{display:flex;align-items:center;gap:.75rem}
-.hdr-link{color:var(--muted);font-size:.83rem;text-decoration:none;display:flex;align-items:center;gap:.3rem;transition:color .2s}
+.hdr-right{display:flex;align-items:center;gap:.65rem}
+.hdr-link{color:var(--muted);font-size:.8rem;text-decoration:none;display:flex;align-items:center;gap:.3rem;transition:color .2s}
 .hdr-link:hover{color:var(--accent)}
-.ver{background:var(--al);color:var(--ad);font-size:.7rem;font-weight:700;padding:.18rem .5rem;border-radius:20px;font-family:var(--mono)}
+.ver{background:var(--al);color:var(--ad);font-size:.68rem;font-weight:700;padding:.16rem .48rem;border-radius:20px;font-family:var(--mono)}
 
-/* ── Hero ── */
-.hero{background:linear-gradient(135deg,rgba(37,99,235,.07) 0%,transparent 60%);padding:2.75rem 2rem 2rem;text-align:center;border-bottom:1px solid var(--border)}
-.hero h1{font-family:var(--serif);font-size:2.2rem;font-weight:700;margin-bottom:.45rem;letter-spacing:-.025em}
+.hero{background:linear-gradient(135deg,rgba(37,99,235,.07) 0%,transparent 60%);padding:2.25rem 2rem 1.75rem;text-align:center;border-bottom:1px solid var(--border)}
+.hero h1{font-family:var(--serif);font-size:2rem;font-weight:700;margin-bottom:.4rem;letter-spacing:-.02em}
 .hero h1 span{color:var(--accent)}
-.hero p{color:var(--muted);font-size:1rem;max-width:620px;margin:0 auto 1.25rem}
-.badges{display:flex;justify-content:center;flex-wrap:wrap;gap:.4rem}
-.badge{background:var(--al);color:var(--ad);font-size:.76rem;font-weight:600;padding:.25rem .75rem;border-radius:20px}
+.hero p{color:var(--muted);font-size:.95rem;max-width:580px;margin:0 auto 1.1rem}
+.badges{display:flex;justify-content:center;flex-wrap:wrap;gap:.35rem}
+.badge{background:var(--al);color:var(--ad);font-size:.74rem;font-weight:600;padding:.22rem .7rem;border-radius:20px}
 
-/* ── Layout ── */
-.main{max-width:1100px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.75rem}
-@media(max-width:880px){.main{grid-template-columns:1fr}}
+.mode-tabs{display:flex;justify-content:center;gap:.5rem;padding:1.25rem 2rem .25rem;border-bottom:1px solid var(--border)}
+.mode-tab{padding:.5rem 1.5rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:.4rem;font-family:inherit}
+.mode-tab.on{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(37,99,235,.22)}
+.mode-tab:hover:not(.on){background:var(--al);color:var(--accent);border-color:var(--accent)}
+.mode-panel{display:none}.mode-panel.on{display:block}
 
-/* ── Card ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;box-shadow:var(--shsm)}
-.card+.card{margin-top:1.5rem}
-.card-title{font-family:var(--serif);font-size:1.1rem;font-weight:700;margin-bottom:1.1rem;display:flex;align-items:center;gap:.45rem}
-.card-title i{color:var(--accent);font-size:.95rem}
+.wrap{max-width:1100px;margin:0 auto;padding:1.75rem 2rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.75rem}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem;box-shadow:var(--sh)}
+.card+.card{margin-top:1.4rem}
+.card-title{font-family:var(--serif);font-size:1.05rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem}
+.card-title i{color:var(--accent);font-size:.9rem}
+.slabel{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:.55rem;display:flex;align-items:center;gap:.3rem}
+.hint{font-size:.72rem;color:var(--muted);margin-top:.15rem}
+.alert-i{background:var(--al);color:var(--ad);border:1px solid #bfdbfe;padding:.6rem .85rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem;line-height:1.5}
 
-/* ── 2×2 table ── */
+.mbox{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.75rem .85rem;transition:all .2s}
+.mbox:hover{border-color:var(--accent);box-shadow:var(--sh)}
+.mlbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.1rem}
+.mval{font-family:var(--mono);font-size:1.2rem;font-weight:700;color:var(--ink)}
+.mci{font-size:.66rem;color:var(--muted);font-family:var(--mono);margin-top:.06rem}
+.mitp{font-size:.68rem;margin-top:.15rem;font-weight:600}
+.igood{color:var(--ok)}.imod{color:var(--warn)}.ipoor{color:var(--err)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.lgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;margin-bottom:.55rem}
+
+.sb{display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;border-radius:8px;font-size:.78rem;font-weight:600;margin-bottom:.9rem}
+.sb-ok{background:var(--ok-l);color:var(--ok)}.sb-warn{background:var(--warn-l);color:var(--warn)}.sb-err{background:var(--err-l);color:var(--err)}
+
+/* Manual input */
 .tbl-wrap{overflow-x:auto}
-.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
-.tbl th,.tbl td{padding:.55rem .7rem;border:1.5px solid var(--border);text-align:center}
-.tbl th{background:#f8f9fb;font-weight:700;font-size:.77rem;color:var(--muted)}
+.tbl{width:100%;border-collapse:collapse;font-size:.86rem}
+.tbl th,.tbl td{padding:.5rem .65rem;border:1.5px solid var(--border);text-align:center}
+.tbl th{background:var(--bg2);font-weight:700;font-size:.74rem;color:var(--muted)}
 .tbl-hdr th{background:var(--al);color:var(--ad)}
-.tp{background:#dcfce7 !important}.fp{background:#fee2e2 !important}
-.fn{background:#fef3c7 !important}.tn{background:#dcfce7 !important}
-.cl{font-size:.7rem;color:var(--muted);display:block}
-.tbl input[type=number]{width:88px;padding:.35rem .5rem;border:1.5px solid var(--border);border-radius:6px;font-size:.92rem;font-weight:700;font-family:var(--mono);text-align:center;outline:none;transition:border-color .2s}
+.c-tp{background:#dcfce7!important}.c-fp{background:#fee2e2!important}
+.c-fn{background:#fef3c7!important}.c-tn{background:#dcfce7!important}
+.cell-lbl{font-size:.68rem;color:var(--muted);display:block}
+.tbl input[type=number]{width:84px;padding:.32rem .45rem;border:1.5px solid var(--border);border-radius:6px;font-size:.9rem;font-weight:700;font-family:var(--mono);text-align:center;outline:none;transition:border-color .2s}
 .tbl input[type=number]:focus{border-color:var(--accent)}
-.ttl{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.ttl{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
 
-/* ── Buttons ── */
-.btn-row{display:flex;gap:.55rem;margin-top:1.1rem;flex-wrap:wrap}
-.btn{padding:.45rem 1.1rem;border-radius:8px;font-size:.86rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:.35rem}
-.btn-p{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.22)}.btn-p:hover{background:var(--ad);transform:translateY(-1px)}
+.btn-row{display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+.btn{padding:.42rem 1rem;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:.32rem}
+.btn-p{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.2)}.btn-p:hover{background:var(--ad);transform:translateY(-1px)}
 .btn-o{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}.btn-o:hover{background:var(--al)}
 .btn-g{background:#f1f5f9;color:var(--muted)}.btn-g:hover{background:var(--border);color:var(--ink)}
 
-/* ── Presets ── */
-.slabel{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem}
-.pre-row{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1rem}
-.pre-btn{padding:.22rem .6rem;border-radius:6px;font-size:.73rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#f8f9fb;color:var(--muted);transition:all .15s;font-family:inherit}
+.pre-row{display:flex;gap:.32rem;flex-wrap:wrap;margin-bottom:.9rem}
+.pre-btn{padding:.2rem .58rem;border-radius:6px;font-size:.71rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--muted);transition:all .15s;font-family:inherit}
 .pre-btn:hover{background:var(--al);border-color:var(--accent);color:var(--ad)}
 
-/* ── Metrics ── */
-.mbox{background:#f8f9fb;border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;transition:all .2s}
-.mbox:hover{border-color:var(--accent);box-shadow:var(--shsm)}
-.mlbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.12rem}
-.mval{font-family:var(--mono);font-size:1.25rem;font-weight:700;color:var(--ink)}
-.mci{font-size:.68rem;color:var(--muted);font-family:var(--mono);margin-top:.08rem}
-.mitp{font-size:.7rem;margin-top:.18rem;font-weight:600}
-.igood{color:var(--ok)}.imod{color:var(--warn)}.ipoor{color:var(--err)}
-.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-.lgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:.6rem}
+.sl-row{display:flex;align-items:center;gap:.65rem;margin-top:.4rem}
+input[type=range]{flex:1;accent-color:var(--accent)}
+.sl-val{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--accent);min-width:50px;text-align:right}
 
-/* ── Status ── */
-.sb{display:flex;align-items:center;gap:.45rem;padding:.45rem .8rem;border-radius:8px;font-size:.8rem;font-weight:600;margin-bottom:1rem}
-.sb-ok{background:var(--ok-l);color:var(--ok)}.sb-warn{background:var(--warn-l);color:var(--warn)}.sb-err{background:var(--err-l);color:var(--err)}
+.chart-box{position:relative;height:260px;margin-top:.85rem}
 
-/* ── Alert ── */
-.alert{padding:.65rem .9rem;border-radius:8px;font-size:.82rem;margin-bottom:.85rem;line-height:1.55}
-.alert-i{background:var(--al);color:var(--ad);border:1px solid #bfdbfe}
-
-/* ── Tabs ── */
-.tabs{display:flex;gap:.25rem;margin-bottom:1.1rem}
-.tab{padding:.35rem .9rem;border-radius:8px;font-size:.79rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--muted);transition:all .2s;font-family:inherit}
-.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.tab:hover:not(.on){background:var(--al);color:var(--accent);border-color:var(--accent)}
-.tp-panel{display:none}.tp-panel.on{display:block}
-
-/* ── Info table ── */
-.itbl{width:100%;font-size:.81rem;border-collapse:collapse}
+.itabs{display:flex;gap:.22rem;margin-bottom:1rem;flex-wrap:wrap}
+.itab{padding:.32rem .85rem;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--muted);transition:all .2s;font-family:inherit}
+.itab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.itab:hover:not(.on){background:var(--al);color:var(--accent);border-color:var(--accent)}
+.ipanel{display:none}.ipanel.on{display:block}
+.itbl{width:100%;font-size:.79rem;border-collapse:collapse}
 .itbl tr{border-bottom:1px solid var(--border)}.itbl tr:last-child{border-bottom:none}
-.itbl td{padding:.45rem .4rem;vertical-align:top}
-.itbl td:first-child{font-weight:700;width:42%;color:var(--ink)}
+.itbl td{padding:.42rem .35rem;vertical-align:top}
+.itbl td:first-child{font-weight:700;width:40%}
 .itbl td:last-child{color:var(--muted)}
 
-/* ── ROC chart ── */
-.chart-box{position:relative;height:272px;margin-top:.9rem}
-
-/* ── Slider ── */
-.sl-row{display:flex;align-items:center;gap:.7rem;margin-top:.45rem}
-input[type=range]{flex:1;accent-color:var(--accent)}
-.sl-val{font-family:var(--mono);font-size:.83rem;font-weight:700;color:var(--accent);min-width:52px;text-align:right}
-
-/* ── Modal ── */
+/* Export modal */
 .mbg{position:fixed;inset:0;background:rgba(26,26,46,.52);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200}
 .mbg.hide{display:none}
-.modal{background:var(--card);border-radius:14px;width:540px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.16)}
-.mhdr{padding:1rem 1.4rem .65rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.mhdr h2{font-size:.98rem;font-weight:700}
-.mbody{padding:1.1rem 1.4rem}
-.mftr{padding:.65rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.45rem}
-.export-pre{font-family:var(--mono);font-size:.76rem;white-space:pre;overflow-x:auto;background:#f8f9fb;border:1px solid var(--border);border-radius:8px;padding:.8rem;line-height:1.65}
+.modal{background:var(--card);border-radius:14px;width:540px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.mhdr{padding:.95rem 1.35rem .6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mhdr h2{font-size:.95rem;font-weight:700}
+.mbody{padding:1.1rem 1.35rem}
+.mftr{padding:.6rem 1.35rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.45rem}
+.epre{font-family:var(--mono);font-size:.74rem;white-space:pre;overflow-x:auto;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.75rem;line-height:1.65}
 
-/* ── Tooltip ── */
 [data-tip]{position:relative;cursor:help}
-[data-tip]::after{content:attr(data-tip);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:.7rem;padding:.3rem .6rem;border-radius:6px;white-space:normal;text-align:center;max-width:200px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;font-weight:400}
+[data-tip]::after{content:attr(data-tip);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:.68rem;padding:.28rem .55rem;border-radius:6px;white-space:normal;text-align:center;max-width:190px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;font-weight:400}
 [data-tip]:hover::after{opacity:1}
 
-footer{text-align:center;padding:1.75rem 2rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted);margin-top:1rem}
+/* Upload mode */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem;margin-bottom:1rem;box-shadow:var(--sh)}
+.step-hdr{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;gap:.55rem}
+.step-num{width:20px;height:20px;background:var(--ink);color:var(--paper);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;flex-shrink:0}
+
+.upload-zone{border:1.5px dashed var(--border);border-radius:8px;padding:2rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone:hover{background:var(--bg2);border-color:var(--accent)}
+.upload-zone input{display:none}
+.u-text{font-size:.9rem;color:var(--muted)}.u-text strong{color:var(--accent);text-decoration:underline;cursor:pointer}
+.u-hint{font-size:.75rem;color:var(--muted);margin-top:.3rem}
+.u-info{font-family:var(--mono);font-size:.78rem;color:var(--ok);margin-top:.5rem;font-weight:600}
+
+.prev-wrap{margin-top:1rem;overflow-x:auto}
+.prev-note{font-size:.72rem;color:var(--muted);margin-bottom:.35rem;font-family:var(--mono)}
+table.ptbl{width:100%;border-collapse:collapse;font-size:.78rem}
+table.ptbl th{background:var(--bg2);padding:.4rem .75rem;text-align:left;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);font-size:.72rem}
+table.ptbl td{padding:.32rem .75rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.76rem}
+
+.pills{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
+.pill{font-size:.76rem;padding:.28rem .7rem;border-radius:99px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;color:var(--muted);transition:all .12s;font-family:var(--mono)}
+.pill:hover{border-color:var(--accent);color:var(--accent)}
+.pill.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pill.pos{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pill.grp-sel{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:640px){.field-grid{grid-template-columns:1fr}}
+.field label{font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.03em}
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
+.run-row{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem}
+
+.grp-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.grp-tag{font-size:.75rem;padding:.22rem .65rem;border-radius:99px;background:var(--al);color:var(--accent);border:1px solid #bfdbfe;font-family:var(--mono);display:inline-flex;align-items:center;gap:.35rem}
+.grp-tag .rm{cursor:pointer;opacity:.6;line-height:1}.grp-tag .rm:hover{opacity:1}
+
+.res-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.25rem}
+.rtab{font-family:var(--mono);font-size:.78rem;padding:.55rem 1.1rem;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.rtab:hover{color:var(--ink)}.rtab.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+table.ct2{border-collapse:collapse;margin:0 auto}
+table.ct2 th,table.ct2 td{border:1px solid var(--border);padding:.75rem 1.25rem;text-align:center}
+.ch2{background:var(--bg2);font-weight:600;color:var(--muted);font-size:.78rem;font-family:var(--mono)}
+.tp2{background:#dcfce7;color:#166534;font-weight:700;font-family:var(--mono)}
+.fp2{background:#fee2e2;color:#991b1b;font-weight:700;font-family:var(--mono)}
+.fn2{background:#fef3c7;color:#92400e;font-weight:700;font-family:var(--mono)}
+.tn2{background:#dcfce7;color:#1e40af;font-weight:700;font-family:var(--mono)}
+.tot2{background:var(--bg2);font-weight:600;font-family:var(--mono);color:var(--muted)}
+.ct-big{font-size:1.5rem;display:block;line-height:1}
+.ct-sub{font-size:.68rem;font-weight:400;opacity:.7;display:block;margin-top:.2rem}
+.ct-legend{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.ldot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:.25rem}
+
+.umgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:.75rem}
+.umc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem}
+.umc.hl{background:var(--al);border-color:#bfdbfe}
+.umc-name{font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:.25rem}
+.umc.hl .umc-name{color:var(--ad)}
+.umc-val{font-family:var(--serif);font-size:1.5rem;color:var(--ink);line-height:1.1}
+.umc.hl .umc-val{color:var(--ad)}
+.umc-form{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.2rem}
+.umc-ci{font-family:var(--mono);font-size:.64rem;color:var(--muted);margin-top:.1rem}
+.kbox{background:var(--ok-l);border:1px solid #bbf7d0;border-radius:8px;padding:.85rem 1rem;font-size:.85rem;color:#065f46;line-height:1.7;margin-bottom:.75rem}
+
+.sg-wrap{overflow-x:auto;margin-top:.5rem}
+table.sg{border-collapse:collapse;width:100%;font-size:.8rem}
+table.sg thead th{background:var(--ink);color:var(--paper);padding:.6rem .9rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;font-weight:500;text-align:center;white-space:nowrap;position:sticky;top:0}
+table.sg thead th:first-child{text-align:left}
+table.sg tbody tr:nth-child(even){background:var(--bg2)}
+table.sg tbody tr:hover{background:var(--al)}
+table.sg td{padding:.55rem .9rem;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+table.sg td:first-child{text-align:left;font-weight:600;color:var(--ink);font-size:.82rem}
+table.sg tr.ov-row{border-top:2px solid var(--border)}
+
+.combo-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.85rem}
+.combo-chip{font-size:.76rem;padding:.28rem .75rem;border-radius:99px;border:1px solid var(--border);cursor:pointer;color:var(--muted);transition:all .12s;font-family:var(--mono)}
+.combo-chip:hover{border-color:var(--accent)}.combo-chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.export-row{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.75rem}
+.alert-err{padding:.6rem .85rem;border-radius:8px;background:var(--warn-l);color:var(--warn);font-size:.8rem;border:1px solid #fcd34d;margin-top:.5rem}
+
+.hidden{display:none!important}
+
+footer{text-align:center;padding:1.5rem 2rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);margin-top:1.5rem}
 footer a{color:var(--accent);text-decoration:none}
 </style>
 </head>
@@ -146,7 +218,7 @@ footer a{color:var(--accent);text-decoration:none}
     <div class="brand-text">診斷<span>分析</span>工具</div>
   </a>
   <div class="hdr-right">
-    <span class="ver">v1.0</span>
+    <span class="ver">v3.0</span>
     <a href="https://andrelin39.github.io" target="_blank" class="hdr-link"><i class="fas fa-house"></i> 首頁</a>
     <a href="https://github.com/andrelin39/diagnostic-analyzer-tool" target="_blank" class="hdr-link"><i class="fab fa-github"></i> GitHub</a>
   </div>
@@ -154,25 +226,34 @@ footer a{color:var(--accent);text-decoration:none}
 
 <div class="hero">
   <h1>醫療數據<span>診斷分析</span>工具</h1>
-  <p>輸入 2×2 列聯表，即時計算診斷試驗效能指標、概似比、ROC 分析，並提供 95% 信賴區間估計。</p>
+  <p>支援手動輸入 2×2 列聯表，或直接上傳 CSV/Excel 資料自動建表，提供完整診斷效能指標與分組比較分析。</p>
   <div class="badges">
-    <span class="badge">靈敏度 / 特異度</span>
-    <span class="badge">陽性 / 陰性預測值</span>
-    <span class="badge">概似比 LR± / DOR</span>
-    <span class="badge">Youden's J</span>
+    <span class="badge">Sn / Sp / PPV / NPV</span>
+    <span class="badge">LR± / DOR / Youden's J</span>
+    <span class="badge">Cohen's κ</span>
     <span class="badge">95% CI（Wilson）</span>
-    <span class="badge">流行率調整</span>
     <span class="badge">ROC / AUC 估計</span>
+    <span class="badge">CSV / Excel 上傳</span>
+    <span class="badge">分組比較分析</span>
   </div>
 </div>
 
-<div class="main">
+<div class="mode-tabs">
+  <button class="mode-tab on" id="modeTab-manual" onclick="switchMode('manual')">
+    <i class="fas fa-keyboard"></i> 手動輸入 2×2
+  </button>
+  <button class="mode-tab" id="modeTab-upload" onclick="switchMode('upload')">
+    <i class="fas fa-file-upload"></i> 上傳資料檔案
+  </button>
+</div>
 
-  <!-- ── 左欄：輸入 ── -->
+<!-- ══ MANUAL MODE ══ -->
+<div id="mode-manual" class="mode-panel on">
+<div class="wrap">
+<div class="grid2">
   <div>
     <div class="card">
       <div class="card-title"><i class="fas fa-table"></i>2×2 列聯表</div>
-
       <div class="slabel"><i class="fas fa-bolt"></i> 快速範例</div>
       <div class="pre-row">
         <button class="pre-btn" onclick="loadPreset('covid')">COVID-19 快篩</button>
@@ -180,198 +261,235 @@ footer a{color:var(--accent);text-decoration:none}
         <button class="pre-btn" onclick="loadPreset('troponin')">肌鈣蛋白（AMI）</button>
         <button class="pre-btn" onclick="loadPreset('psa')">PSA（攝護腺癌）</button>
       </div>
-
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead>
-            <tr class="tbl-hdr">
-              <th></th><th>金標準 陽性</th><th>金標準 陰性</th><th>列合計</th>
-            </tr>
-          </thead>
+          <thead><tr class="tbl-hdr"><th></th><th>金標準 陽性</th><th>金標準 陰性</th><th>列合計</th></tr></thead>
           <tbody>
             <tr>
               <th>試驗 陽性</th>
-              <td class="tp"><span class="cl">TP（真陽性）</span><input type="number" id="tp" min="0" value="80" oninput="calc()"></td>
-              <td class="fp"><span class="cl">FP（偽陽性）</span><input type="number" id="fp" min="0" value="10" oninput="calc()"></td>
+              <td class="c-tp"><span class="cell-lbl">TP（真陽性）</span><input type="number" id="tp" min="0" value="80" oninput="mcalc()"></td>
+              <td class="c-fp"><span class="cell-lbl">FP（偽陽性）</span><input type="number" id="fp" min="0" value="10" oninput="mcalc()"></td>
               <td class="ttl" id="r1">90</td>
             </tr>
             <tr>
               <th>試驗 陰性</th>
-              <td class="fn"><span class="cl">FN（偽陰性）</span><input type="number" id="fn" min="0" value="20" oninput="calc()"></td>
-              <td class="tn"><span class="cl">TN（真陰性）</span><input type="number" id="tn" min="0" value="190" oninput="calc()"></td>
+              <td class="c-fn"><span class="cell-lbl">FN（偽陰性）</span><input type="number" id="fn" min="0" value="20" oninput="mcalc()"></td>
+              <td class="c-tn"><span class="cell-lbl">TN（真陰性）</span><input type="number" id="tn" min="0" value="190" oninput="mcalc()"></td>
               <td class="ttl" id="r2">210</td>
             </tr>
-            <tr>
-              <th>欄合計</th>
-              <td class="ttl" id="c1">100</td>
-              <td class="ttl" id="c2">200</td>
-              <td class="ttl" id="tot"><strong>300</strong></td>
-            </tr>
+            <tr><th>欄合計</th><td class="ttl" id="c1">100</td><td class="ttl" id="c2">200</td><td class="ttl" id="tot"><strong>300</strong></td></tr>
           </tbody>
         </table>
       </div>
       <div class="btn-row">
-        <button class="btn btn-p" onclick="calc()"><i class="fas fa-calculator"></i> 計算</button>
+        <button class="btn btn-p" onclick="mcalc()"><i class="fas fa-calculator"></i> 計算</button>
         <button class="btn btn-o" onclick="openExport()"><i class="fas fa-file-alt"></i> 匯出報告</button>
-        <button class="btn btn-g" onclick="resetAll()"><i class="fas fa-undo"></i> 重設</button>
+        <button class="btn btn-g" onclick="mreset()"><i class="fas fa-undo"></i> 重設</button>
       </div>
     </div>
 
-    <!-- 流行率調整 -->
     <div class="card">
       <div class="card-title"><i class="fas fa-sliders-h"></i>流行率調整（PPV / NPV）</div>
-      <div class="alert alert-i">
-        <i class="fas fa-info-circle"></i>
-        PPV 與 NPV 受流行率影響。拖曳滑桿模擬不同流行率情境（靈敏度與特異度維持不變）。
-      </div>
-      <label style="font-size:.8rem;font-weight:600;color:var(--muted)">自訂流行率</label>
+      <div class="alert-i"><i class="fas fa-info-circle"></i> PPV 與 NPV 受流行率影響。拖曳滑桿模擬不同情境（靈敏度與特異度不變）。</div>
+      <label style="font-size:.78rem;font-weight:600;color:var(--muted)">自訂流行率</label>
       <div class="sl-row">
         <input type="range" id="prevSlider" min="0.1" max="99.9" step="0.1" value="33.3" oninput="adjPrev()">
         <span class="sl-val" id="prevVal">33.3%</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.7rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.65rem">
         <div class="mbox"><div class="mlbl" data-tip="依指定流行率計算的 PPV">調整後 PPV</div><div class="mval" id="adj-ppv">—</div></div>
         <div class="mbox"><div class="mlbl" data-tip="依指定流行率計算的 NPV">調整後 NPV</div><div class="mval" id="adj-npv">—</div></div>
       </div>
-      <button class="btn btn-g" style="margin-top:.7rem;font-size:.77rem" onclick="syncPrev()"><i class="fas fa-sync"></i> 回復實測流行率</button>
+      <button class="btn btn-g" style="margin-top:.65rem;font-size:.75rem" onclick="syncPrev()"><i class="fas fa-sync"></i> 回復實測流行率</button>
     </div>
 
-    <!-- 公式說明 -->
     <div class="card">
       <div class="card-title"><i class="fas fa-book"></i>公式說明</div>
-      <div class="tabs">
-        <button class="tab on" data-panel="pf">基礎指標</button>
-        <button class="tab" data-panel="pl">概似比</button>
-        <button class="tab" data-panel="pi">判讀標準</button>
+      <div class="itabs">
+        <button class="itab on" data-panel="pf">基礎指標</button>
+        <button class="itab" data-panel="pl">概似比</button>
+        <button class="itab" data-panel="pk">Cohen's κ</button>
+        <button class="itab" data-panel="pi">判讀標準</button>
       </div>
-      <div id="pf" class="tp-panel on">
-        <table class="itbl">
-          <tr><td>靈敏度 (Sn)</td><td>TP / (TP + FN)</td></tr>
-          <tr><td>特異度 (Sp)</td><td>TN / (TN + FP)</td></tr>
-          <tr><td>PPV</td><td>TP / (TP + FP)</td></tr>
-          <tr><td>NPV</td><td>TN / (TN + FN)</td></tr>
-          <tr><td>準確率</td><td>(TP + TN) / N</td></tr>
-          <tr><td>Youden's J</td><td>Sn + Sp − 1</td></tr>
-          <tr><td>F1 Score</td><td>2TP / (2TP + FP + FN)</td></tr>
-          <tr><td>MCC</td><td>(TP·TN − FP·FN) / √[(TP+FP)(TP+FN)(TN+FP)(TN+FN)]</td></tr>
-        </table>
-      </div>
-      <div id="pl" class="tp-panel">
-        <table class="itbl">
-          <tr><td>LR＋</td><td>Sn / (1 − Sp)</td></tr>
-          <tr><td>LR－</td><td>(1 − Sn) / Sp</td></tr>
-          <tr><td>DOR</td><td>LR+ / LR−</td></tr>
-          <tr><td>驗前勝算</td><td>流行率 / (1 − 流行率)</td></tr>
-          <tr><td>驗後勝算（陽）</td><td>LR+ × 驗前勝算</td></tr>
-          <tr><td>驗後機率（陽）</td><td>驗後勝算 / (1 + 驗後勝算)</td></tr>
-        </table>
-      </div>
-      <div id="pi" class="tp-panel">
-        <table class="itbl">
-          <tr><td>Sn / Sp</td><td>≥ 0.90 優秀；0.70–0.89 良好；&lt; 0.70 偏低</td></tr>
-          <tr><td>LR+</td><td>≥ 10 強；5–9 中；&lt; 5 弱</td></tr>
-          <tr><td>LR−</td><td>≤ 0.1 強；0.1–0.2 中；&gt; 0.2 弱</td></tr>
-          <tr><td>AUC</td><td>0.9–1.0 優；0.8–0.9 良；0.7–0.8 可；&lt; 0.7 差</td></tr>
-          <tr><td>Youden's J</td><td>建議 ≥ 0.5；1 = 完美；0 = 無鑑別力</td></tr>
-          <tr><td>DOR</td><td>1 = 無鑑別力；一般 &gt; 20 為佳</td></tr>
-        </table>
-      </div>
+      <div id="pf" class="ipanel on"><table class="itbl">
+        <tr><td>靈敏度 (Sn)</td><td>TP / (TP + FN)</td></tr>
+        <tr><td>特異度 (Sp)</td><td>TN / (TN + FP)</td></tr>
+        <tr><td>PPV</td><td>TP / (TP + FP)</td></tr>
+        <tr><td>NPV</td><td>TN / (TN + FN)</td></tr>
+        <tr><td>準確率</td><td>(TP + TN) / N</td></tr>
+        <tr><td>Youden's J</td><td>Sn + Sp − 1</td></tr>
+        <tr><td>F1 Score</td><td>2TP / (2TP + FP + FN)</td></tr>
+        <tr><td>MCC</td><td>(TP·TN − FP·FN) / √[(TP+FP)(TP+FN)(TN+FP)(TN+FN)]</td></tr>
+      </table></div>
+      <div id="pl" class="ipanel"><table class="itbl">
+        <tr><td>LR＋</td><td>Sn / (1 − Sp)</td></tr>
+        <tr><td>LR－</td><td>(1 − Sn) / Sp</td></tr>
+        <tr><td>DOR</td><td>LR+ / LR−</td></tr>
+        <tr><td>驗前勝算</td><td>流行率 / (1 − 流行率)</td></tr>
+        <tr><td>驗後機率（陽）</td><td>LR+ × 驗前勝算 → 轉換為機率</td></tr>
+        <tr><td>驗後機率（陰）</td><td>LR− × 驗前勝算 → 轉換為機率</td></tr>
+      </table></div>
+      <div id="pk" class="ipanel"><table class="itbl">
+        <tr><td>Cohen's κ</td><td>(Po − Pe) / (1 − Pe)</td></tr>
+        <tr><td>Po（觀測一致率）</td><td>(TP + TN) / N</td></tr>
+        <tr><td>Pe（期望一致率）</td><td>((TP+FP)/N)·((TP+FN)/N) + ((FN+TN)/N)·((FP+TN)/N)</td></tr>
+      </table>
+      <div style="font-size:.74rem;color:var(--muted);margin-top:.5rem">Landis &amp; Koch (1977). Biometrics, 33(1), 159–174.</div></div>
+      <div id="pi" class="ipanel"><table class="itbl">
+        <tr><td>Sn / Sp</td><td>≥ 0.90 優秀；0.70–0.89 良好；&lt; 0.70 偏低</td></tr>
+        <tr><td>LR+</td><td>≥ 10 強；5–9 中；&lt; 5 弱</td></tr>
+        <tr><td>LR−</td><td>≤ 0.1 強；0.1–0.2 中；&gt; 0.2 弱</td></tr>
+        <tr><td>AUC</td><td>0.9–1.0 優；0.8–0.9 良；0.7–0.8 可；&lt; 0.7 差</td></tr>
+        <tr><td>Youden's J</td><td>建議 ≥ 0.5；1 = 完美；0 = 無鑑別力</td></tr>
+        <tr><td>Cohen's κ</td><td>&lt;0.2 極低；0.2–0.4 尚可；0.4–0.6 中等；0.6–0.8 良好；≥0.8 極佳</td></tr>
+      </table></div>
     </div>
   </div>
 
-  <!-- ── 右欄：結果 ── -->
   <div>
     <div class="card">
-      <div id="sb" class="sb sb-ok"><i class="fas fa-check-circle"></i><span id="sbmsg">計算完成</span></div>
+      <div id="msb" class="sb sb-ok"><i class="fas fa-check-circle"></i><span id="msbmsg">計算完成</span></div>
       <div class="card-title"><i class="fas fa-chart-bar"></i>診斷效能指標</div>
       <div class="mgrid">
-        <div class="mbox" data-tip="靈敏度：試驗正確識別真實陽性的能力">
-          <div class="mlbl">靈敏度 (Sensitivity)</div><div class="mval" id="m-sn">—</div>
-          <div class="mci" id="ci-sn"></div><div class="mitp" id="ip-sn"></div>
-        </div>
-        <div class="mbox" data-tip="特異度：試驗正確識別真實陰性的能力">
-          <div class="mlbl">特異度 (Specificity)</div><div class="mval" id="m-sp">—</div>
-          <div class="mci" id="ci-sp"></div><div class="mitp" id="ip-sp"></div>
-        </div>
-        <div class="mbox" data-tip="陽性預測值：試驗陽性時真正患病的機率">
-          <div class="mlbl">PPV（陽性預測值）</div><div class="mval" id="m-ppv">—</div>
-          <div class="mci" id="ci-ppv"></div>
-        </div>
-        <div class="mbox" data-tip="陰性預測值：試驗陰性時真正未患病的機率">
-          <div class="mlbl">NPV（陰性預測值）</div><div class="mval" id="m-npv">—</div>
-          <div class="mci" id="ci-npv"></div>
-        </div>
-        <div class="mbox" data-tip="整體準確率 = (TP+TN)/N">
-          <div class="mlbl">準確率 (Accuracy)</div><div class="mval" id="m-acc">—</div>
-          <div class="mci" id="ci-acc"></div><div class="mitp" id="ip-acc"></div>
-        </div>
-        <div class="mbox" data-tip="Youden's J = Sn + Sp − 1，綜合鑑別力">
-          <div class="mlbl">Youden's J</div><div class="mval" id="m-j">—</div>
-          <div class="mci"></div><div class="mitp" id="ip-j"></div>
-        </div>
-        <div class="mbox" data-tip="F1 Score：精確率與召回率的調和平均數">
-          <div class="mlbl">F1 Score</div><div class="mval" id="m-f1">—</div>
-        </div>
-        <div class="mbox" data-tip="Matthews 相關係數 (MCC)，取值 −1 到 1">
-          <div class="mlbl">MCC</div><div class="mval" id="m-mcc">—</div>
-        </div>
+        <div class="mbox" data-tip="試驗正確識別真實陽性的能力"><div class="mlbl">靈敏度 (Sensitivity)</div><div class="mval" id="m-sn">—</div><div class="mci" id="ci-sn"></div><div class="mitp" id="ip-sn"></div></div>
+        <div class="mbox" data-tip="試驗正確識別真實陰性的能力"><div class="mlbl">特異度 (Specificity)</div><div class="mval" id="m-sp">—</div><div class="mci" id="ci-sp"></div><div class="mitp" id="ip-sp"></div></div>
+        <div class="mbox" data-tip="試驗陽性時真正患病的機率"><div class="mlbl">PPV（陽性預測值）</div><div class="mval" id="m-ppv">—</div><div class="mci" id="ci-ppv"></div></div>
+        <div class="mbox" data-tip="試驗陰性時真正未患病的機率"><div class="mlbl">NPV（陰性預測值）</div><div class="mval" id="m-npv">—</div><div class="mci" id="ci-npv"></div></div>
+        <div class="mbox" data-tip="整體準確率 = (TP+TN)/N"><div class="mlbl">準確率 (Accuracy)</div><div class="mval" id="m-acc">—</div><div class="mci" id="ci-acc"></div></div>
+        <div class="mbox" data-tip="Youden's J = Sn + Sp − 1"><div class="mlbl">Youden's J</div><div class="mval" id="m-j">—</div><div class="mitp" id="ip-j"></div></div>
+        <div class="mbox" data-tip="Cohen's κ：試驗與金標準的一致性"><div class="mlbl">Cohen's κ</div><div class="mval" id="m-kap">—</div><div class="mitp" id="ip-kap"></div></div>
+        <div class="mbox" data-tip="F1 Score：精確率與召回率的調和平均數"><div class="mlbl">F1 Score</div><div class="mval" id="m-f1">—</div></div>
+        <div class="mbox" data-tip="Matthews 相關係數，取值 −1 到 1"><div class="mlbl">MCC</div><div class="mval" id="m-mcc">—</div></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title"><i class="fas fa-balance-scale"></i>概似比與驗後機率</div>
       <div class="lgrid">
-        <div class="mbox" data-tip="LR+：陽性結果概似比，值越大越有意義">
-          <div class="mlbl">LR＋</div><div class="mval" id="m-lrp">—</div><div class="mitp" id="ip-lrp"></div>
-        </div>
-        <div class="mbox" data-tip="LR−：陰性結果概似比，值越小越能排除診斷">
-          <div class="mlbl">LR－</div><div class="mval" id="m-lrn">—</div><div class="mitp" id="ip-lrn"></div>
-        </div>
-        <div class="mbox" data-tip="診斷勝算比 DOR = LR+ / LR−">
-          <div class="mlbl">DOR</div><div class="mval" id="m-dor">—</div>
-        </div>
+        <div class="mbox" data-tip="LR+：陽性結果概似比，值越大越有意義"><div class="mlbl">LR＋</div><div class="mval" id="m-lrp">—</div><div class="mitp" id="ip-lrp"></div></div>
+        <div class="mbox" data-tip="LR−：陰性結果概似比，值越小越能排除診斷"><div class="mlbl">LR－</div><div class="mval" id="m-lrn">—</div><div class="mitp" id="ip-lrn"></div></div>
+        <div class="mbox" data-tip="診斷勝算比 DOR = LR+ / LR−"><div class="mlbl">DOR</div><div class="mval" id="m-dor">—</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-        <div class="mbox">
-          <div class="mlbl" data-tip="試驗陽性後的患病機率（Bayes 更新）">驗後機率（陽性）</div>
-          <div class="mval" id="m-pp">—</div>
-        </div>
-        <div class="mbox">
-          <div class="mlbl" data-tip="試驗陰性後仍患病的機率（Bayes 更新）">驗後機率（陰性）</div>
-          <div class="mval" id="m-pn">—</div>
-        </div>
+        <div class="mbox"><div class="mlbl" data-tip="試驗陽性後的患病機率（Bayes）">驗後機率（陽性）</div><div class="mval" id="m-pp">—</div></div>
+        <div class="mbox"><div class="mlbl" data-tip="試驗陰性後仍患病的機率（Bayes）">驗後機率（陰性）</div><div class="mval" id="m-pn">—</div></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title"><i class="fas fa-chart-line"></i>ROC 曲線（單截斷點估計）</div>
-      <div class="alert alert-i" style="margin-bottom:.6rem">
-        <i class="fas fa-info-circle"></i>
-        此圖為單一截斷點的 ROC 近似，AUC 以梯形法（含端點 (0,0) 與 (1,1)）計算。
-      </div>
+      <div class="alert-i" style="margin-bottom:.6rem"><i class="fas fa-info-circle"></i> 單截斷點 ROC 近似，AUC 以梯形法計算（含端點）。</div>
       <div class="chart-box"><canvas id="rocChart"></canvas></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.65rem">
-        <div class="mbox">
-          <div class="mlbl">AUC（估計）</div><div class="mval" id="m-auc">—</div>
-          <div class="mitp" id="ip-auc"></div>
-        </div>
-        <div class="mbox">
-          <div class="mlbl">偽陽性率 (FPR)</div><div class="mval" id="m-fpr">—</div>
-        </div>
+        <div class="mbox"><div class="mlbl">AUC（估計）</div><div class="mval" id="m-auc">—</div><div class="mitp" id="ip-auc"></div></div>
+        <div class="mbox"><div class="mlbl">偽陽性率 (FPR)</div><div class="mval" id="m-fpr">—</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ══ UPLOAD MODE ══ -->
+<div id="mode-upload" class="mode-panel">
+<div class="wrap" style="max-width:900px">
+
+  <div class="step-card">
+    <div class="step-hdr"><span class="step-num">1</span>上傳資料檔案</div>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" onchange="handleFile(event)">
+      <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--muted);opacity:.35;display:block;margin-bottom:.6rem"></i>
+      <div class="u-text">拖曳或 <strong>點擊上傳</strong> CSV / TSV / Excel</div>
+      <div class="u-hint">支援 .csv · .tsv · .xlsx · .xls，第一列需為欄位標頭</div>
+      <div class="u-info" id="fileInfo"></div>
+    </div>
+    <div class="prev-wrap hidden" id="previewWrap">
+      <div class="prev-note">▸ 資料預覽（前 5 筆）</div>
+      <table class="ptbl" id="previewTable"></table>
+    </div>
+    <div class="alert-err hidden" id="noDataAlert">⚠ 無法解析，請確認格式正確。</div>
+  </div>
+
+  <div class="step-card hidden" id="configSection">
+    <div class="step-hdr"><span class="step-num">2</span>設定欄位、陽性值與分組變數</div>
+    <div class="field-grid">
+      <div class="field"><label>金標準 (Reference Standard)</label><div class="pills" id="refPills"></div></div>
+      <div class="field"><label>測試 / 診斷工具 (Index Test)</label><div class="pills" id="testPills"></div></div>
+    </div>
+    <div class="divider"></div>
+    <div id="valueConfig" class="hidden">
+      <div class="field-grid">
+        <div class="field"><label>金標準「陽性」值</label><div class="pills" id="refPosPills"></div><div class="hint">點選設為陽性，其餘歸為陰性</div></div>
+        <div class="field"><label>測試「陽性」值</label><div class="pills" id="testPosPills"></div><div class="hint">點選設為陽性，其餘歸為陰性</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="field">
+        <label>分組變數（可多選，可略過）</label>
+        <div class="hint" style="margin-bottom:.4rem">例如：醫師、判讀方式。可同時選多個，系統計算所有組合。</div>
+        <div class="pills" id="grpPills"></div>
+      </div>
+      <div id="selGrpDisplay" class="hidden" style="margin-top:.65rem">
+        <div style="font-size:.74rem;color:var(--muted);margin-bottom:.35rem;font-family:var(--mono)">已選分組：</div>
+        <div class="grp-tags" id="grpTagsRow"></div>
+      </div>
+      <div class="run-row">
+        <button class="btn btn-g" onclick="resetUConfig()"><i class="fas fa-undo"></i> 重設</button>
+        <button class="btn btn-p" onclick="runAnalysis()"><i class="fas fa-play"></i> 執行分析</button>
       </div>
     </div>
   </div>
 
-</div><!-- /.main -->
+  <div class="step-card hidden" id="resultsSection">
+    <div class="step-hdr"><span class="step-num">3</span>分析結果</div>
+    <div class="res-tabs">
+      <div class="rtab on" id="rtab-overall" onclick="showResTab('overall')">整體分析</div>
+      <div class="rtab hidden" id="rtab-subgroup" onclick="showResTab('subgroup')">分組比較</div>
+    </div>
 
-<!-- ── Export Modal ── -->
+    <div id="rpane-overall">
+      <div style="overflow-x:auto;margin-bottom:1rem">
+        <table class="ct2">
+          <thead>
+            <tr><th class="ch2" style="border:none;background:transparent"></th><th class="ch2" colspan="2">金標準</th><th class="ch2">合計</th></tr>
+            <tr><th class="ch2">測試結果</th><th class="ch2">陽性</th><th class="ch2">陰性</th><th class="ch2"></th></tr>
+          </thead>
+          <tbody>
+            <tr><th class="ch2">陽性</th><td class="tp2"><span class="ct-big" id="u-tp">—</span><span class="ct-sub">True Positive</span></td><td class="fp2"><span class="ct-big" id="u-fp">—</span><span class="ct-sub">False Positive</span></td><td class="tot2" id="u-r1">—</td></tr>
+            <tr><th class="ch2">陰性</th><td class="fn2"><span class="ct-big" id="u-fn">—</span><span class="ct-sub">False Negative</span></td><td class="tn2"><span class="ct-big" id="u-tn">—</span><span class="ct-sub">True Negative</span></td><td class="tot2" id="u-r2">—</td></tr>
+            <tr><th class="ch2">合計</th><td class="tot2" id="u-c1">—</td><td class="tot2" id="u-c2">—</td><td class="tot2" id="u-n">—</td></tr>
+          </tbody>
+        </table>
+        <div class="ct-legend">
+          <span><span class="ldot" style="background:#dcfce7;border:1px solid #166534"></span>TP</span>
+          <span><span class="ldot" style="background:#fee2e2;border:1px solid #991b1b"></span>FP</span>
+          <span><span class="ldot" style="background:#fef3c7;border:1px solid #92400e"></span>FN</span>
+          <span><span class="ldot" style="background:#dcfce7;border:1px solid #1e40af"></span>TN</span>
+        </div>
+      </div>
+      <div class="umgrid" id="metricsMain"></div>
+      <div id="kappaMain" class="kbox"></div>
+    </div>
+
+    <div id="rpane-subgroup" class="hidden">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.55rem;font-family:var(--mono)">選擇分組方式：</div>
+      <div class="combo-chips" id="comboChips"></div>
+      <div class="sg-wrap"><table class="sg"><thead id="sgHead"></thead><tbody id="sgBody"></tbody></table></div>
+    </div>
+
+    <div class="export-row">
+      <button class="btn btn-g" onclick="copyUResults()"><i class="fas fa-copy"></i> 複製整體結果</button>
+      <button class="btn btn-o" onclick="window.print()"><i class="fas fa-print"></i> 列印 / PDF</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Export Modal -->
 <div class="mbg hide" id="exportModal">
   <div class="modal">
-    <div class="mhdr">
-      <h2><i class="fas fa-file-alt" style="color:var(--accent);margin-right:.4rem"></i>匯出報告</h2>
-      <button class="btn btn-g" style="padding:.28rem .55rem" onclick="closeExport()">✕</button>
-    </div>
-    <div class="mbody"><pre class="export-pre" id="exportPre"></pre></div>
+    <div class="mhdr"><h2><i class="fas fa-file-alt" style="color:var(--accent);margin-right:.35rem"></i>匯出報告</h2><button class="btn btn-g" style="padding:.26rem .5rem" onclick="closeExport()">✕</button></div>
+    <div class="mbody"><pre class="epre" id="exportPre"></pre></div>
     <div class="mftr">
       <button class="btn btn-p" onclick="copyRpt()"><i class="fas fa-copy"></i> 複製</button>
       <button class="btn btn-o" onclick="dlRpt()"><i class="fas fa-download"></i> 下載 .txt</button>
@@ -383,355 +501,162 @@ footer a{color:var(--accent);text-decoration:none}
 <footer>
   <p>醫療數據診斷分析工具 · 林志豪 ·
     <a href="https://andrelin39.github.io" target="_blank">andrelin39.github.io</a> ·
-    <a href="https://github.com/andrelin39/diagnostic-analyzer-tool" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-  </p>
-  <p style="margin-top:.25rem;font-size:.74rem">本工具僅供學術研究與教育用途，不構成任何臨床診斷建議。</p>
+    <a href="https://github.com/andrelin39/diagnostic-analyzer-tool" target="_blank"><i class="fab fa-github"></i> GitHub</a></p>
+  <p style="margin-top:.2rem;font-size:.72rem">本工具僅供學術研究與教育用途，不構成任何臨床診斷建議。</p>
 </footer>
 
 <script>
-// ── Chart ─────────────────────────────────────────────
-let rocChart = null;
+// ══ Shared utilities ══
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function pct(v){return isFinite(v)&&!isNaN(v)?(v*100).toFixed(1)+'%':'—';}
+function num(v,d){return isFinite(v)&&!isNaN(v)?v.toFixed(d||3):'—';}
+function wilsonCI(k,n,z){z=z||1.96;if(n===0)return[0,0];const p=k/n,d=1+z*z/n,c=(p+z*z/(2*n))/d,m=(z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n)))/d;return[Math.max(0,c-m),Math.min(1,c+m)];}
+function ciStr(lo,hi){return '95% CI ['+pct(lo)+', '+pct(hi)+']';}
 
-function initChart() {
-  const ctx = document.getElementById('rocChart').getContext('2d');
-  rocChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [
-        {
-          label: 'ROC 曲線',
-          data: [{x:0,y:0},{x:0.1,y:0.8},{x:1,y:1}],
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37,99,235,.09)',
-          fill: true, tension: 0, borderWidth: 2,
-          pointRadius: [0, 6, 0],
-          pointBackgroundColor: '#2563eb'
-        },
-        {
-          label: '隨機猜測',
-          data: [{x:0,y:0},{x:1,y:1}],
-          borderColor: '#9ca3af',
-          borderDash: [6,4],
-          fill: false, pointRadius: 0, borderWidth: 1.5
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { type: 'linear', min: 0, max: 1, title: { display: true, text: '偽陽性率 (1 − Specificity)' }, grid: { color: '#f0f0f0' } },
-        y: { min: 0, max: 1, title: { display: true, text: '靈敏度 (Sensitivity)' }, grid: { color: '#f0f0f0' } }
-      },
-      plugins: {
-        legend: { display: true, position: 'bottom', labels: { font: { size: 11 } } },
-        tooltip: { callbacks: { label: c => `FPR=${c.parsed.x.toFixed(3)}, Sn=${c.parsed.y.toFixed(3)}` } }
-      }
-    }
-  });
+function coreCalc(tp,fp,fn,tn){
+  const n=tp+fp+fn+tn;if(n===0)return null;
+  const dP=tp+fn,dN=fp+tn;
+  const sn=dP>0?tp/dP:NaN,sp=dN>0?tn/dN:NaN;
+  const ppv=(tp+fp)>0?tp/(tp+fp):NaN,npv=(fn+tn)>0?tn/(fn+tn):NaN;
+  const acc=(tp+tn)/n;
+  const j=(!isNaN(sn)&&!isNaN(sp))?sn+sp-1:NaN;
+  const f1=(2*tp+fp+fn)>0?2*tp/(2*tp+fp+fn):NaN;
+  const mccD=Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
+  const mcc=mccD>0?(tp*tn-fp*fn)/mccD:NaN;
+  const lrp=(!isNaN(sp)&&(1-sp)>0)?sn/(1-sp):Infinity;
+  const lrn=(!isNaN(sn)&&!isNaN(sp)&&sp>0)?(1-sn)/sp:NaN;
+  const dor=(!isNaN(lrn)&&lrn>0)?lrp/lrn:Infinity;
+  const fpr=!isNaN(sp)?1-sp:NaN;
+  const auc=(!isNaN(fpr)&&!isNaN(sn))?0.5*fpr*sn+0.5*(1-fpr)*(sn+1):NaN;
+  const Po=(tp+tn)/n,Pe=((tp+fp)/n)*((tp+fn)/n)+((fn+tn)/n)*((fp+tn)/n);
+  const kap=(1-Pe)>0?(Po-Pe)/(1-Pe):NaN;
+  const prev=dP/n,prevOdds=(prev>0&&prev<1)?prev/(1-prev):NaN;
+  const ppOdds=(isFinite(lrp)&&!isNaN(prevOdds))?lrp*prevOdds:Infinity;
+  const pnOdds=(!isNaN(lrn)&&!isNaN(prevOdds))?lrn*prevOdds:NaN;
+  const postPos=isFinite(ppOdds)?ppOdds/(1+ppOdds):1;
+  const postNeg=!isNaN(pnOdds)?pnOdds/(1+pnOdds):NaN;
+  return{tp,fp,fn,tn,n,dP,dN,sn,sp,ppv,npv,acc,j,f1,mcc,lrp,lrn,dor,fpr,auc,kap,prev,postPos,postNeg};
 }
 
-function updateChart(fpr, sn) {
-  if (!rocChart) return;
-  rocChart.data.datasets[0].data = [{x:0,y:0},{x:fpr,y:sn},{x:1,y:1}];
-  rocChart.update();
-}
+function kappaLabel(k){if(!isFinite(k)||isNaN(k))return'—';if(k<0)return'Poor';if(k<0.2)return'Slight';if(k<0.4)return'Fair';if(k<0.6)return'Moderate';if(k<0.8)return'Substantial';return'Almost Perfect';}
+function kappaLabelZH(k){if(!isFinite(k)||isNaN(k))return'—';if(k<0)return'一致性差';if(k<0.2)return'一致性極低';if(k<0.4)return'一致性尚可';if(k<0.6)return'一致性中等';if(k<0.8)return'一致性良好';return'一致性極佳';}
 
-// ── Presets ───────────────────────────────────────────
-const PRESETS = {
-  covid:   { tp:85,  fp:8,   fn:15, tn:192,  name:'COVID-19 快篩（模擬資料）' },
-  mammo:   { tp:132, fp:983, fn:45, tn:63650, name:'乳房攝影篩檢（模擬資料）' },
-  troponin:{ tp:97,  fp:5,   fn:3,  tn:95,   name:'高敏感肌鈣蛋白（AMI 診斷）' },
-  psa:     { tp:70,  fp:70,  fn:30, tn:130,  name:'PSA 篩檢（攝護腺癌）' }
-};
-let presetName = '';
+function switchMode(m){document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('on'));document.getElementById('mode-'+m).classList.add('on');document.getElementById('modeTab-'+m).classList.add('on');}
 
-function loadPreset(k) {
-  const p = PRESETS[k]; if (!p) return;
-  ['tp','fp','fn','tn'].forEach(id => { document.getElementById(id).value = p[id]; });
-  presetName = p.name;
-  calc();
-}
+function showToast(msg,ok){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;padding:.5rem .9rem;border-radius:10px;font-size:.8rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;transform:translateY(80px);opacity:0;transition:all .3s;font-family:var(--sans)';t.style.background=ok?'#16a34a':'#dc2626';t.style.color='#fff';t.textContent=msg;document.body.appendChild(t);requestAnimationFrame(()=>{t.style.transform='translateY(0)';t.style.opacity='1';});setTimeout(()=>{t.style.transform='translateY(80px)';t.style.opacity='0';setTimeout(()=>t.remove(),300);},2200);}
 
-// ── Wilson CI ─────────────────────────────────────────
-function wilsonCI(k, n, z) {
-  z = z || 1.96;
-  if (n === 0) return [0, 0];
-  const p = k / n;
-  const d = 1 + z * z / n;
-  const c = (p + z * z / (2 * n)) / d;
-  const m = (z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))) / d;
-  return [Math.max(0, c - m), Math.min(1, c + m)];
-}
+// ══ Manual mode ══
+let rocChart=null,MR=null,mPresetName='';
+const PRESETS={covid:{tp:85,fp:8,fn:15,tn:192,name:'COVID-19 快篩（模擬資料）'},mammo:{tp:132,fp:983,fn:45,tn:63650,name:'乳房攝影篩檢（模擬資料）'},troponin:{tp:97,fp:5,fn:3,tn:95,name:'高敏感肌鈣蛋白（AMI 診斷）'},psa:{tp:70,fp:70,fn:30,tn:130,name:'PSA 篩檢（攝護腺癌）'}};
 
-function pct(v) { return isFinite(v) && !isNaN(v) ? (v * 100).toFixed(1) + '%' : '—'; }
-function num(v, d) { return isFinite(v) && !isNaN(v) ? v.toFixed(d || 3) : '—'; }
-function ciStr(lo, hi) { return '95% CI [' + pct(lo) + ', ' + pct(hi) + ']'; }
+function loadPreset(k){const p=PRESETS[k];if(!p)return;['tp','fp','fn','tn'].forEach(id=>{document.getElementById(id).value=p[id];});mPresetName=p.name;delete document.getElementById('prevSlider').dataset.locked;mcalc();}
 
-function interpSnSp(v) {
-  if (v >= 0.9) return ['igood', '優秀'];
-  if (v >= 0.7) return ['imod', '良好'];
-  return ['ipoor', '偏低'];
-}
-function interpLRp(v) {
-  if (!isFinite(v) || v >= 10) return ['igood', v >= 10 ? '強力支持診斷' : '完美'];
-  if (v >= 5) return ['imod', '中等支持'];
-  return ['ipoor', '鑑別力弱'];
-}
-function interpLRn(v) {
-  if (isNaN(v)) return ['', ''];
-  if (v <= 0.1) return ['igood', '強力排除診斷'];
-  if (v <= 0.2) return ['imod', '中等排除'];
-  return ['ipoor', '鑑別力弱'];
-}
-function interpAuc(v) {
-  if (v >= 0.9) return ['igood', '優秀'];
-  if (v >= 0.8) return ['igood', '良好'];
-  if (v >= 0.7) return ['imod', '尚可'];
-  return ['ipoor', '差'];
-}
+function initChart(){const ctx=document.getElementById('rocChart').getContext('2d');rocChart=new Chart(ctx,{type:'line',data:{datasets:[{label:'ROC 曲線',data:[{x:0,y:0},{x:.1,y:.8},{x:1,y:1}],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',fill:true,tension:0,borderWidth:2,pointRadius:[0,6,0],pointBackgroundColor:'#2563eb'},{label:'隨機猜測',data:[{x:0,y:0},{x:1,y:1}],borderColor:'#9ca3af',borderDash:[6,4],fill:false,pointRadius:0,borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',min:0,max:1,title:{display:true,text:'偽陽性率 (1 − Specificity)'},grid:{color:'#f0f0f0'}},y:{min:0,max:1,title:{display:true,text:'靈敏度 (Sensitivity)'},grid:{color:'#f0f0f0'}}},plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:c=>'FPR='+c.parsed.x.toFixed(3)+', Sn='+c.parsed.y.toFixed(3)}}}}}});}
+function updateChart(fpr,sn){if(!rocChart)return;rocChart.data.datasets[0].data=[{x:0,y:0},{x:fpr,y:sn},{x:1,y:1}];rocChart.update();}
 
-function setM(valId, val, ciId, ciTxt, ipId, ipCls, ipTxt) {
-  document.getElementById(valId).textContent = val;
-  if (ciId) document.getElementById(ciId).textContent = ciTxt || '';
-  if (ipId) {
-    const el = document.getElementById(ipId);
-    el.className = 'mitp ' + (ipCls || '');
-    el.textContent = ipTxt || '';
-  }
-}
+function interpSnSp(v){if(v>=0.9)return['igood','優秀'];if(v>=0.7)return['imod','良好'];return['ipoor','偏低'];}
+function interpLRp(v){if(!isFinite(v)||v>=10)return['igood',v>=10?'強力支持診斷':'完美'];if(v>=5)return['imod','中等支持'];return['ipoor','鑑別力弱'];}
+function interpLRn(v){if(isNaN(v))return['',''];if(v<=0.1)return['igood','強力排除診斷'];if(v<=0.2)return['imod','中等排除'];return['ipoor','鑑別力弱'];}
+function interpAuc(v){if(v>=0.9)return['igood','優秀'];if(v>=0.8)return['igood','良好'];if(v>=0.7)return['imod','尚可'];return['ipoor','差'];}
+function interpKap(k){if(!isFinite(k)||isNaN(k))return['',''];if(k>=0.8)return['igood','一致性極佳'];if(k>=0.6)return['igood','一致性良好'];if(k>=0.4)return['imod','一致性中等'];if(k>=0.2)return['imod','一致性尚可'];return['ipoor','一致性極低'];}
 
-// ── Core calc ─────────────────────────────────────────
-let R = null; // last results
+function setM(vid,val,ciid,ciTxt,ipid,ipCls,ipTxt){document.getElementById(vid).textContent=val;if(ciid){const el=document.getElementById(ciid);if(el)el.textContent=ciTxt||'';}if(ipid){const el=document.getElementById(ipid);if(el){el.className='mitp '+(ipCls||'');el.textContent=ipTxt||'';}}}
 
-function calc() {
-  const tp = Math.max(0, parseInt(document.getElementById('tp').value) || 0);
-  const fp = Math.max(0, parseInt(document.getElementById('fp').value) || 0);
-  const fn = Math.max(0, parseInt(document.getElementById('fn').value) || 0);
-  const tn = Math.max(0, parseInt(document.getElementById('tn').value) || 0);
-
-  document.getElementById('r1').textContent = tp + fp;
-  document.getElementById('r2').textContent = fn + tn;
-  document.getElementById('c1').textContent = tp + fn;
-  document.getElementById('c2').textContent = fp + tn;
-  const n = tp + fp + fn + tn;
-  document.getElementById('tot').innerHTML = '<strong>' + n + '</strong>';
-
-  const sb = document.getElementById('sb');
-  const sm = document.getElementById('sbmsg');
-
-  if (n === 0) {
-    sb.className = 'sb sb-err'; sm.textContent = '請輸入數值'; return;
-  }
-  if (tp + fn === 0 || fp + tn === 0) {
-    sb.className = 'sb sb-warn'; sm.textContent = '警告：某欄合計為 0，部分指標無法計算';
-  } else {
-    sb.className = 'sb sb-ok'; sm.textContent = '計算完成（N = ' + n + '）';
-  }
-
-  const dP = tp + fn;   // disease positive
-  const dN = fp + tn;   // disease negative
-  const sn  = dP > 0 ? tp / dP : NaN;
-  const sp  = dN > 0 ? tn / dN : NaN;
-  const ppv = (tp + fp) > 0 ? tp / (tp + fp) : NaN;
-  const npv = (fn + tn) > 0 ? tn / (fn + tn) : NaN;
-  const acc = (tp + tn) / n;
-  const j   = isNaN(sn) || isNaN(sp) ? NaN : sn + sp - 1;
-  const f1  = (2*tp + fp + fn) > 0 ? 2*tp / (2*tp + fp + fn) : NaN;
-  const mccD= Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
-  const mcc = mccD > 0 ? (tp*tn - fp*fn) / mccD : NaN;
-
-  const lrp = (!isNaN(sp) && (1 - sp) > 0) ? sn / (1 - sp) : Infinity;
-  const lrn = (!isNaN(sn) && !isNaN(sp) && sp > 0) ? (1 - sn) / sp : NaN;
-  const dor = (!isNaN(lrn) && lrn > 0) ? lrp / lrn : Infinity;
-  const fpr = !isNaN(sp) ? 1 - sp : NaN;
-
-  // AUC trapezoid: (0,0) → (fpr,sn) → (1,1)
-  const auc = (!isNaN(fpr) && !isNaN(sn))
-    ? 0.5 * fpr * sn + 0.5 * (1 - fpr) * (sn + 1)
-    : NaN;
-
-  const prev = dP / n;
-  const prevOdds = prev > 0 && prev < 1 ? prev / (1 - prev) : NaN;
-  const ppOdds = (isFinite(lrp) && !isNaN(prevOdds)) ? lrp * prevOdds : Infinity;
-  const pnOdds = (!isNaN(lrn) && !isNaN(prevOdds)) ? lrn * prevOdds : NaN;
-  const postPos = isFinite(ppOdds) ? ppOdds / (1 + ppOdds) : 1;
-  const postNeg = !isNaN(pnOdds) ? pnOdds / (1 + pnOdds) : NaN;
-
-  // Wilson CIs
-  const ciSn  = wilsonCI(tp, dP);
-  const ciSp  = wilsonCI(tn, dN);
-  const ciPpv = wilsonCI(tp, tp + fp);
-  const ciNpv = wilsonCI(tn, fn + tn);
-  const ciAcc = wilsonCI(tp + tn, n);
-
-  const [csSn, txSn] = interpSnSp(sn);
-  const [csSp, txSp] = interpSnSp(sp);
-  const [csLrp, txLrp] = interpLRp(lrp);
-  const [csLrn, txLrn] = interpLRn(lrn);
-  const [csAuc, txAuc] = interpAuc(auc);
-
-  setM('m-sn',  pct(sn),  'ci-sn',  ciStr(...ciSn),  'ip-sn',  csSn, txSn);
-  setM('m-sp',  pct(sp),  'ci-sp',  ciStr(...ciSp),  'ip-sp',  csSp, txSp);
-  setM('m-ppv', pct(ppv), 'ci-ppv', ciStr(...ciPpv), null, '', '');
-  setM('m-npv', pct(npv), 'ci-npv', ciStr(...ciNpv), null, '', '');
-  setM('m-acc', pct(acc), 'ci-acc', ciStr(...ciAcc), 'ip-acc', '', '');
-  setM('m-j',   num(j),   null,     '',              'ip-j', j >= 0.5 ? 'igood' : 'ipoor', isNaN(j) ? '' : j >= 0.5 ? '具鑑別力' : '鑑別力不足');
-  setM('m-f1',  isNaN(f1) ? '—' : pct(f1), null, '', null, '', '');
-  setM('m-mcc', num(mcc), null, '', null, '', '');
-
-  document.getElementById('m-lrp').textContent = isFinite(lrp) ? lrp.toFixed(2) : '∞';
-  const ipLrp = document.getElementById('ip-lrp');
-  ipLrp.className = 'mitp ' + csLrp; ipLrp.textContent = txLrp;
-
-  document.getElementById('m-lrn').textContent = num(lrn);
-  const ipLrn = document.getElementById('ip-lrn');
-  ipLrn.className = 'mitp ' + csLrn; ipLrn.textContent = txLrn;
-
-  document.getElementById('m-dor').textContent = isFinite(dor) ? dor.toFixed(1) : '∞';
-  document.getElementById('m-pp').textContent = pct(postPos);
-  document.getElementById('m-pn').textContent = isNaN(postNeg) ? '—' : pct(postNeg);
-  document.getElementById('m-fpr').textContent = pct(fpr);
-  document.getElementById('m-auc').textContent = num(auc);
-  const ipAuc = document.getElementById('ip-auc');
-  ipAuc.className = 'mitp ' + csAuc; ipAuc.textContent = isNaN(auc) ? '' : txAuc;
-
-  if (!isNaN(fpr) && !isNaN(sn)) updateChart(fpr, sn);
-
-  // sync slider to actual prevalence
-  const slider = document.getElementById('prevSlider');
-  if (!slider.dataset.locked) {
-    slider.value = (prev * 100).toFixed(1);
-    document.getElementById('prevVal').textContent = (prev * 100).toFixed(1) + '%';
-  }
-
-  R = { tp, fp, fn, tn, n, sn, sp, ppv, npv, acc, j, f1, mcc, lrp, lrn, dor, auc, fpr, prev, postPos, postNeg,
-        ciSn, ciSp, ciPpv, ciNpv, ciAcc };
+function mcalc(){
+  const tp=Math.max(0,parseInt(document.getElementById('tp').value)||0);
+  const fp=Math.max(0,parseInt(document.getElementById('fp').value)||0);
+  const fn=Math.max(0,parseInt(document.getElementById('fn').value)||0);
+  const tn=Math.max(0,parseInt(document.getElementById('tn').value)||0);
+  document.getElementById('r1').textContent=tp+fp;document.getElementById('r2').textContent=fn+tn;
+  document.getElementById('c1').textContent=tp+fn;document.getElementById('c2').textContent=fp+tn;
+  const n=tp+fp+fn+tn;document.getElementById('tot').innerHTML='<strong>'+n+'</strong>';
+  const sb=document.getElementById('msb'),sm=document.getElementById('msbmsg');
+  if(n===0){sb.className='sb sb-err';sm.textContent='請輸入數值';return;}
+  if(tp+fn===0||fp+tn===0){sb.className='sb sb-warn';sm.textContent='警告：某欄合計為 0，部分指標無法計算';}
+  else{sb.className='sb sb-ok';sm.textContent='計算完成（N = '+n+'）';}
+  const R=coreCalc(tp,fp,fn,tn);MR=R;if(!R)return;
+  const ciSn=wilsonCI(tp,R.dP),ciSp=wilsonCI(tn,R.dN),ciPpv=wilsonCI(tp,tp+fp),ciNpv=wilsonCI(tn,fn+tn),ciAcc=wilsonCI(tp+tn,n);
+  const[csSn,txSn]=interpSnSp(R.sn),[csSp,txSp]=interpSnSp(R.sp),[csLrp,txLrp]=interpLRp(R.lrp),[csLrn,txLrn]=interpLRn(R.lrn),[csAuc,txAuc]=interpAuc(R.auc),[csKap,txKap]=interpKap(R.kap);
+  setM('m-sn',pct(R.sn),'ci-sn',ciStr(...ciSn),'ip-sn',csSn,txSn);
+  setM('m-sp',pct(R.sp),'ci-sp',ciStr(...ciSp),'ip-sp',csSp,txSp);
+  setM('m-ppv',pct(R.ppv),'ci-ppv',ciStr(...ciPpv),null,'','');
+  setM('m-npv',pct(R.npv),'ci-npv',ciStr(...ciNpv),null,'','');
+  setM('m-acc',pct(R.acc),'ci-acc',ciStr(...ciAcc),null,'','');
+  setM('m-j',num(R.j),null,'','ip-j',R.j>=0.5?'igood':'ipoor',isNaN(R.j)?'':R.j>=0.5?'具鑑別力':'鑑別力不足');
+  setM('m-kap',num(R.kap),null,'','ip-kap',csKap,isNaN(R.kap)?'':txKap+'（'+kappaLabel(R.kap)+'）');
+  setM('m-f1',isNaN(R.f1)?'—':pct(R.f1),null,'',null,'','');
+  setM('m-mcc',num(R.mcc),null,'',null,'','');
+  document.getElementById('m-lrp').textContent=isFinite(R.lrp)?R.lrp.toFixed(2):'∞';
+  let el=document.getElementById('ip-lrp');el.className='mitp '+csLrp;el.textContent=txLrp;
+  document.getElementById('m-lrn').textContent=num(R.lrn);
+  el=document.getElementById('ip-lrn');el.className='mitp '+csLrn;el.textContent=txLrn;
+  document.getElementById('m-dor').textContent=isFinite(R.dor)?R.dor.toFixed(1):'∞';
+  document.getElementById('m-pp').textContent=pct(R.postPos);
+  document.getElementById('m-pn').textContent=isNaN(R.postNeg)?'—':pct(R.postNeg);
+  document.getElementById('m-fpr').textContent=pct(R.fpr);
+  document.getElementById('m-auc').textContent=num(R.auc);
+  el=document.getElementById('ip-auc');el.className='mitp '+csAuc;el.textContent=isNaN(R.auc)?'':txAuc;
+  if(!isNaN(R.fpr)&&!isNaN(R.sn))updateChart(R.fpr,R.sn);
+  const slider=document.getElementById('prevSlider');if(!slider.dataset.locked)slider.value=(R.prev*100).toFixed(1);
   adjPrev();
+  MR.ciSn=ciSn;MR.ciSp=ciSp;MR.ciPpv=ciPpv;MR.ciNpv=ciNpv;MR.ciAcc=ciAcc;
 }
 
-// ── Prevalence adjustment ─────────────────────────────
-function adjPrev() {
-  const slider = document.getElementById('prevSlider');
-  const prev = parseFloat(slider.value) / 100;
-  document.getElementById('prevVal').textContent = (prev * 100).toFixed(1) + '%';
+function adjPrev(){const slider=document.getElementById('prevSlider');const prev=parseFloat(slider.value)/100;document.getElementById('prevVal').textContent=(prev*100).toFixed(1)+'%';if(!MR||isNaN(MR.sn)||isNaN(MR.sp))return;const ppvA=(MR.sn*prev)/(MR.sn*prev+(1-MR.sp)*(1-prev));const npvA=(MR.sp*(1-prev))/(MR.sp*(1-prev)+(1-MR.sn)*prev);document.getElementById('adj-ppv').textContent=isNaN(ppvA)?'—':pct(ppvA);document.getElementById('adj-npv').textContent=isNaN(npvA)?'—':pct(npvA);}
+function syncPrev(){const s=document.getElementById('prevSlider');delete s.dataset.locked;if(MR){s.value=(MR.prev*100).toFixed(1);adjPrev();}}
+document.getElementById('prevSlider').addEventListener('mousedown',function(){this.dataset.locked='1';});
+function mreset(){['tp','fp','fn','tn'].forEach(id=>{document.getElementById(id).value=0;});mPresetName='';delete document.getElementById('prevSlider').dataset.locked;mcalc();}
 
-  if (!R || isNaN(R.sn) || isNaN(R.sp)) return;
-  const ppvA = (R.sn * prev) / (R.sn * prev + (1 - R.sp) * (1 - prev));
-  const npvA = (R.sp * (1 - prev)) / (R.sp * (1 - prev) + (1 - R.sn) * prev);
-  document.getElementById('adj-ppv').textContent = isNaN(ppvA) ? '—' : pct(ppvA);
-  document.getElementById('adj-npv').textContent = isNaN(npvA) ? '—' : pct(npvA);
-}
+document.querySelectorAll('.itab').forEach(btn=>{btn.addEventListener('click',function(){const pid=this.dataset.panel;document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.ipanel').forEach(p=>p.classList.remove('on'));this.classList.add('on');document.getElementById(pid).classList.add('on');});});
 
-function syncPrev() {
-  const slider = document.getElementById('prevSlider');
-  delete slider.dataset.locked;
-  if (R) { slider.value = (R.prev * 100).toFixed(1); adjPrev(); }
-}
+function buildReport(){if(!MR)return'尚未計算';const R=MR;const now=new Date().toLocaleString('zh-TW');const ci=(lo,hi)=>'['+(lo*100).toFixed(1)+'%, '+(hi*100).toFixed(1)+'%]';const ln='─'.repeat(50);return['醫療數據診斷分析工具 — 計算報告','產生時間：'+now,mPresetName?'資料集：'+mPresetName:'',ln,'【2×2 列聯表】','              金標準陽性   金標準陰性','試驗陽性      TP = '+String(R.tp).padStart(6)+'   FP = '+String(R.fp).padStart(6),'試驗陰性      FN = '+String(R.fn).padStart(6)+'   TN = '+String(R.tn).padStart(6),'樣本總數 N = '+R.n+'，流行率 = '+(R.prev*100).toFixed(1)+'%',ln,'【基礎診斷效能指標（95% CI，Wilson 法）】','靈敏度 (Sensitivity)  : '+pct(R.sn)+'  '+ci(...R.ciSn),'特異度 (Specificity)  : '+pct(R.sp)+'  '+ci(...R.ciSp),'陽性預測值 (PPV)      : '+pct(R.ppv)+'  '+ci(...R.ciPpv),'陰性預測值 (NPV)      : '+pct(R.npv)+'  '+ci(...R.ciNpv),'準確率 (Accuracy)     : '+pct(R.acc)+'  '+ci(...R.ciAcc),"Youden's J            : "+num(R.j),"Cohen's κ             : "+num(R.kap)+' ('+kappaLabelZH(R.kap)+')','F1 Score              : '+(isNaN(R.f1)?'—':pct(R.f1)),'MCC                   : '+num(R.mcc),ln,'【概似比與診斷勝算比】','LR+  : '+(isFinite(R.lrp)?R.lrp.toFixed(2):'∞'),'LR−  : '+num(R.lrn),'DOR  : '+(isFinite(R.dor)?R.dor.toFixed(1):'∞'),'驗後機率（陽性）: '+pct(R.postPos),'驗後機率（陰性）: '+(isNaN(R.postNeg)?'—':pct(R.postNeg)),ln,'【ROC 分析（單截斷點估計）】','偽陽性率 (FPR): '+pct(R.fpr),'AUC（估計值） : '+num(R.auc),ln,'本工具僅供學術研究與教育用途，不構成任何臨床診斷建議。','https://andrelin39.github.io/diagnostic-analyzer-tool/'].filter(l=>l!==undefined).join('\n');}
+function openExport(){document.getElementById('exportPre').textContent=buildReport();document.getElementById('exportModal').classList.remove('hide');}
+function closeExport(){document.getElementById('exportModal').classList.add('hide');}
+function copyRpt(){navigator.clipboard.writeText(document.getElementById('exportPre').textContent).then(()=>showToast('已複製到剪貼簿',true)).catch(()=>showToast('複製失敗',false));}
+function dlRpt(){const blob=new Blob([document.getElementById('exportPre').textContent],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='diagnostic-report-'+new Date().toISOString().slice(0,10)+'.txt';a.click();}
 
-document.getElementById('prevSlider').addEventListener('mousedown', function() {
-  this.dataset.locked = '1';
-});
+// ══ Upload mode ══
+let uData=[],uCols=[],uRefCol=null,uTestCol=null,uRefPos=new Set(),uTestPos=new Set(),uGrpCols=[],uActiveCombo=null,uAllResults={},uOverall=null;
 
-// ── Tabs ──────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    const pid = this.dataset.panel;
-    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('on'); });
-    document.querySelectorAll('.tp-panel').forEach(function(p) { p.classList.remove('on'); });
-    this.classList.add('on');
-    document.getElementById(pid).classList.add('on');
-  });
-});
+function handleFile(e){const f=e.target.files[0];if(!f)return;const ext=f.name.split('.').pop().toLowerCase();if(ext==='xlsx'||ext==='xls'){if(typeof XLSX==='undefined'){alert('Excel 解析套件尚未載入，請稍候再試。');return;}const r=new FileReader();r.onload=ev=>parseXLSX(ev.target.result,f.name,f.size);r.readAsArrayBuffer(f);}else{const r=new FileReader();r.onload=ev=>parseCSV(ev.target.result,f.name,f.size);r.readAsText(f,'UTF-8');}}
+const uz=document.getElementById('uploadZone');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.style.background='var(--bg2)';});
+uz.addEventListener('dragleave',()=>{uz.style.background='';});
+uz.addEventListener('drop',e=>{e.preventDefault();uz.style.background='';const f=e.dataTransfer.files[0];if(f)handleFile({target:{files:[f]}});});
 
-// ── Reset ─────────────────────────────────────────────
-function resetAll() {
-  ['tp','fp','fn','tn'].forEach(function(id) { document.getElementById(id).value = 0; });
-  presetName = '';
-  const s = document.getElementById('prevSlider');
-  delete s.dataset.locked;
-  calc();
-}
+function parseXLSX(buf,name,size){hideUAlert();try{const wb=XLSX.read(buf,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{defval:''});if(!rows.length){showUAlert();return;}uCols=Object.keys(rows[0]);uData=rows.map(r=>{const o={};uCols.forEach(c=>o[c]=String(r[c]??'').trim());return o;}).filter(r=>Object.values(r).some(v=>v!==''));if(!uData.length){showUAlert();return;}document.getElementById('fileInfo').textContent=name+'  ('+(size/1024).toFixed(1)+' KB · '+uData.length+' 筆)';renderPreview();renderUConfig();}catch(err){showUAlert('Excel 解析失敗：'+err.message);}}
+function parseCSV(txt,name,size){hideUAlert();const delim=(txt.split('\t').length>txt.split(',').length)?'\t':',';const lines=txt.trim().split(/\r?\n/);if(lines.length<2){showUAlert();return;}uCols=lines[0].split(delim).map(c=>c.replace(/^"|"$/g,'').trim());uData=lines.slice(1).map(l=>{const v=splitLine(l,delim);const o={};uCols.forEach((c,i)=>o[c]=(v[i]??'').trim());return o;}).filter(r=>Object.values(r).some(v=>v!==''));if(!uData.length){showUAlert();return;}document.getElementById('fileInfo').textContent=name+'  ('+(size/1024).toFixed(1)+' KB · '+uData.length+' 筆)';renderPreview();renderUConfig();}
+function splitLine(l,d){const res=[];let cur='',q=false;for(let i=0;i<l.length;i++){if(l[i]==='"'){q=!q;continue;}if(l[i]===d&&!q){res.push(cur);cur='';}else cur+=l[i];}res.push(cur);return res;}
+function showUAlert(msg){const el=document.getElementById('noDataAlert');el.textContent='⚠ '+(msg||'無法解析，請確認格式正確。');el.classList.remove('hidden');}
+function hideUAlert(){document.getElementById('noDataAlert').classList.add('hidden');}
 
-// ── Export ────────────────────────────────────────────
-function buildReport() {
-  if (!R) return '尚未計算';
-  const now = new Date().toLocaleString('zh-TW');
-  const ci = function(lo, hi) { return '[' + (lo*100).toFixed(1) + '%, ' + (hi*100).toFixed(1) + '%]'; };
-  const ln = '─'.repeat(50);
-  return [
-    '醫療數據診斷分析工具 — 計算報告',
-    '產生時間：' + now,
-    presetName ? '資料集：' + presetName : '',
-    ln,
-    '【2×2 列聯表】',
-    '              金標準陽性   金標準陰性',
-    '試驗陽性      TP = ' + String(R.tp).padStart(6) + '   FP = ' + String(R.fp).padStart(6),
-    '試驗陰性      FN = ' + String(R.fn).padStart(6) + '   TN = ' + String(R.tn).padStart(6),
-    '樣本總數 N = ' + R.n + '，流行率 = ' + (R.prev*100).toFixed(1) + '%',
-    ln,
-    '【基礎診斷效能指標（95% CI，Wilson 法）】',
-    '靈敏度 (Sensitivity)  : ' + (R.sn*100).toFixed(1) + '%  ' + ci(...R.ciSn),
-    '特異度 (Specificity)  : ' + (R.sp*100).toFixed(1) + '%  ' + ci(...R.ciSp),
-    '陽性預測值 (PPV)      : ' + (R.ppv*100).toFixed(1) + '%  ' + ci(...R.ciPpv),
-    '陰性預測值 (NPV)      : ' + (R.npv*100).toFixed(1) + '%  ' + ci(...R.ciNpv),
-    '準確率 (Accuracy)     : ' + (R.acc*100).toFixed(1) + '%  ' + ci(...R.ciAcc),
-    "Youden's J            : " + (isNaN(R.j) ? '—' : R.j.toFixed(3)),
-    'F1 Score              : ' + (isNaN(R.f1) ? '—' : (R.f1*100).toFixed(1) + '%'),
-    'MCC                   : ' + (isNaN(R.mcc) ? '—' : R.mcc.toFixed(3)),
-    ln,
-    '【概似比與診斷勝算比】',
-    'LR+  : ' + (isFinite(R.lrp) ? R.lrp.toFixed(2) : '∞'),
-    'LR−  : ' + (isNaN(R.lrn) ? '—' : R.lrn.toFixed(3)),
-    'DOR  : ' + (isFinite(R.dor) ? R.dor.toFixed(1) : '∞'),
-    '驗後機率（陽性）: ' + (R.postPos*100).toFixed(1) + '%',
-    '驗後機率（陰性）: ' + (isNaN(R.postNeg) ? '—' : (R.postNeg*100).toFixed(1) + '%'),
-    ln,
-    '【ROC 分析（單截斷點估計）】',
-    '偽陽性率 (FPR): ' + (isNaN(R.fpr) ? '—' : (R.fpr*100).toFixed(1) + '%'),
-    'AUC（估計值） : ' + (isNaN(R.auc) ? '—' : R.auc.toFixed(3)),
-    ln,
-    '本工具僅供學術研究與教育用途，不構成任何臨床診斷建議。',
-    'https://andrelin39.github.io/diagnostic-analyzer-tool/'
-  ].filter(function(l) { return l !== undefined; }).join('\n');
-}
+function renderPreview(){let h='<tr>'+uCols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>';uData.slice(0,5).forEach(r=>{h+='<tr>'+uCols.map(c=>'<td>'+esc(r[c]??'')+'</td>').join('')+'</tr>';});document.getElementById('previewTable').innerHTML=h;document.getElementById('previewWrap').classList.remove('hidden');}
 
-function openExport() {
-  document.getElementById('exportPre').textContent = buildReport();
-  document.getElementById('exportModal').classList.remove('hide');
-}
-function closeExport() { document.getElementById('exportModal').classList.add('hide'); }
+function renderUConfig(){document.getElementById('configSection').classList.remove('hidden');document.getElementById('resultsSection').classList.add('hidden');const mk=(id,type)=>{document.getElementById(id).innerHTML=uCols.map(c=>'<span class="pill" onclick="selectCol(\''+type+'\',\''+esc(c)+'\')" data-col="'+esc(c)+'" data-type="'+type+'">'+esc(c)+'</span>').join('');};mk('refPills','ref');mk('testPills','test');mk('grpPills','grp');uRefCol=null;uTestCol=null;uRefPos.clear();uTestPos.clear();uGrpCols=[];document.getElementById('valueConfig').classList.add('hidden');updateGrpDisplay();}
+function selectCol(type,col){if(type==='ref'){uRefCol=col;document.querySelectorAll('#refPills .pill').forEach(p=>p.classList.toggle('sel',p.dataset.col===col));uRefPos.clear();renderValuePills();}else if(type==='test'){uTestCol=col;document.querySelectorAll('#testPills .pill').forEach(p=>p.classList.toggle('sel',p.dataset.col===col));uTestPos.clear();renderValuePills();}else if(type==='grp'){const el=document.querySelector('#grpPills .pill[data-col="'+col+'"]');if(uGrpCols.includes(col)){uGrpCols=uGrpCols.filter(c=>c!==col);if(el)el.classList.remove('grp-sel');}else{uGrpCols.push(col);if(el)el.classList.add('grp-sel');}updateGrpDisplay();}if(uRefCol&&uTestCol)document.getElementById('valueConfig').classList.remove('hidden');}
+function renderValuePills(){if(!uRefCol||!uTestCol)return;const rU=[...new Set(uData.map(r=>r[uRefCol]).filter(v=>v!==''))].sort();const tU=[...new Set(uData.map(r=>r[uTestCol]).filter(v=>v!==''))].sort();document.getElementById('refPosPills').innerHTML=rU.map(v=>'<span class="pill" onclick="togglePos(\'ref\',\''+esc(v)+'\')" id="rp-'+esc(v)+'">'+esc(v)+'</span>').join('');document.getElementById('testPosPills').innerHTML=tU.map(v=>'<span class="pill" onclick="togglePos(\'test\',\''+esc(v)+'\')" id="tp2-'+esc(v)+'">'+esc(v)+'</span>').join('');}
+function togglePos(type,val){if(type==='ref'){if(uRefPos.has(val)){uRefPos.delete(val);document.getElementById('rp-'+val).classList.remove('pos');}else{uRefPos.add(val);document.getElementById('rp-'+val).classList.add('pos');}}else{if(uTestPos.has(val)){uTestPos.delete(val);document.getElementById('tp2-'+val).classList.remove('pos');}else{uTestPos.add(val);document.getElementById('tp2-'+val).classList.add('pos');}}}
+function updateGrpDisplay(){const disp=document.getElementById('selGrpDisplay');if(uGrpCols.length===0){disp.classList.add('hidden');return;}disp.classList.remove('hidden');document.getElementById('grpTagsRow').innerHTML=uGrpCols.map(c=>'<span class="grp-tag">'+esc(c)+'<span class="rm" onclick="removeGrp(\''+esc(c)+'\')">×</span></span>').join('');}
+function removeGrp(col){uGrpCols=uGrpCols.filter(c=>c!==col);const el=document.querySelector('#grpPills .pill[data-col="'+col+'"]');if(el)el.classList.remove('grp-sel');updateGrpDisplay();}
+function resetUConfig(){renderUConfig();}
 
-function copyRpt() {
-  navigator.clipboard.writeText(document.getElementById('exportPre').textContent)
-    .then(function() { toast('已複製到剪貼簿', 'tok'); })
-    .catch(function() { toast('複製失敗', 'ter'); });
-}
+function uCalcRows(rows){let tp=0,fp=0,fn=0,tn=0;rows.forEach(r=>{const rp=uRefPos.has(r[uRefCol]),tp2=uTestPos.has(r[uTestCol]);if(tp2&&rp)tp++;else if(tp2&&!rp)fp++;else if(!tp2&&rp)fn++;else tn++;});return coreCalc(tp,fp,fn,tn);}
+function getGroups(rows,gcols){if(gcols.length===0)return[{label:'全部',rows}];const map={};rows.forEach(r=>{const k=gcols.map(c=>c+'='+r[c]).join(' | ');if(!map[k])map[k]={label:k,vals:gcols.map(c=>r[c]),rows:[]};map[k].rows.push(r);});return Object.values(map).sort((a,b)=>a.label.localeCompare(b.label));}
+function powerSet(arr){const res=[];for(let i=1;i<(1<<arr.length);i++){res.push(arr.filter((_,j)=>(i>>j)&1));}return res;}
 
-function dlRpt() {
-  const blob = new Blob([document.getElementById('exportPre').textContent], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'diagnostic-report-' + new Date().toISOString().slice(0,10) + '.txt';
-  a.click();
-}
+function runAnalysis(){if(!uRefCol||!uTestCol){alert('請先選擇金標準與測試欄位。');return;}if(!uRefPos.size||!uTestPos.size){alert('請分別選擇金標準與測試的「陽性」值。');return;}uOverall=uCalcRows(uData);fillMainCT(uOverall);fillMainMetrics(uOverall);uAllResults={};if(uGrpCols.length>0){powerSet(uGrpCols).forEach(combo=>{const key=combo.join(' × ');const groups=getGroups(uData,combo);uAllResults[key]=groups.map(g=>{const r=uCalcRows(g.rows);r.label=g.label;r.vals=g.vals;r.cols=combo;return r;});});buildComboChips(Object.keys(uAllResults));renderSubgroupTable(Object.keys(uAllResults)[0]);document.getElementById('rtab-subgroup').classList.remove('hidden');}else{document.getElementById('rtab-subgroup').classList.add('hidden');}document.getElementById('resultsSection').classList.remove('hidden');showResTab('overall');document.getElementById('resultsSection').scrollIntoView({behavior:'smooth',block:'start'});}
 
-function toast(msg, cls) {
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;padding:.55rem .95rem;border-radius:10px;font-size:.81rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;transform:translateY(80px);opacity:0;transition:all .3s;font-family:var(--sans)';
-  t.style.background = cls === 'tok' ? '#16a34a' : '#dc2626';
-  t.style.color = '#fff';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  requestAnimationFrame(function() { t.style.transform = 'translateY(0)'; t.style.opacity = '1'; });
-  setTimeout(function() { t.style.transform = 'translateY(80px)'; t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 2200);
-}
+function fillMainCT(r){document.getElementById('u-tp').textContent=r.tp;document.getElementById('u-fp').textContent=r.fp;document.getElementById('u-fn').textContent=r.fn;document.getElementById('u-tn').textContent=r.tn;document.getElementById('u-r1').textContent=r.tp+r.fp;document.getElementById('u-r2').textContent=r.fn+r.tn;document.getElementById('u-c1').textContent=r.tp+r.fn;document.getElementById('u-c2').textContent=r.fp+r.tn;document.getElementById('u-n').textContent='N = '+r.n;}
+function fillMainMetrics(r){const ciSn=wilsonCI(r.tp,r.dP),ciSp=wilsonCI(r.tn,r.dN),ciPpv=wilsonCI(r.tp,r.tp+r.fp),ciNpv=wilsonCI(r.tn,r.fn+r.tn),ciAcc=wilsonCI(r.tp+r.tn,r.n);const ms=[{name:'Sensitivity',val:pct(r.sn),form:'TP/(TP+FN)',ci:ciStr(...ciSn),hl:false},{name:'Specificity',val:pct(r.sp),form:'TN/(TN+FP)',ci:ciStr(...ciSp),hl:false},{name:'PPV',val:pct(r.ppv),form:'TP/(TP+FP)',ci:ciStr(...ciPpv),hl:false},{name:'NPV',val:pct(r.npv),form:'TN/(TN+FN)',ci:ciStr(...ciNpv),hl:false},{name:'Accuracy',val:pct(r.acc),form:'(TP+TN)/N',ci:ciStr(...ciAcc),hl:true},{name:'LR+',val:isFinite(r.lrp)?r.lrp.toFixed(2):'∞',form:'Sens/(1−Spec)',ci:'',hl:false},{name:'LR−',val:num(r.lrn),form:'(1−Sens)/Spec',ci:'',hl:false},{name:"Youden's J",val:num(r.j),form:'Sn+Sp−1',ci:'',hl:false},{name:'DOR',val:isFinite(r.dor)?r.dor.toFixed(1):'∞',form:'LR+/LR−',ci:'',hl:false},{name:"Cohen's κ",val:num(r.kap),form:'(Po−Pe)/(1−Pe)',ci:'',hl:true}];document.getElementById('metricsMain').innerHTML=ms.map(m=>'<div class="umc'+(m.hl?' hl':'')+'"><div class="umc-name">'+m.name+'</div><div class="umc-val">'+m.val+'</div><div class="umc-form">'+m.form+'</div>'+(m.ci?'<div class="umc-ci">'+m.ci+'</div>':'')+'</div>').join('');document.getElementById('kappaMain').innerHTML='<strong>Cohen\'s Kappa 一致性判讀</strong><br>κ = '+num(r.kap)+' → <strong>'+kappaLabelZH(r.kap)+' ('+kappaLabel(r.kap)+')</strong>（Landis &amp; Koch, 1977）<br><span style="font-size:.78rem;opacity:.8">N = '+r.n+'；疾病陽性 '+r.dP+' 筆；疾病陰性 '+r.dN+' 筆</span>';}
 
-// ── Init ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  initChart();
-  calc();
-});
+function buildComboChips(keys){document.getElementById('comboChips').innerHTML=keys.map((k,i)=>'<span class="combo-chip'+(i===0?' on':'')+'" onclick="selectCombo(\''+esc(k)+'\')" id="chip-'+esc(k)+'">'+esc(k)+'</span>').join('');}
+function selectCombo(key){document.querySelectorAll('.combo-chip').forEach(c=>c.classList.toggle('on',c.id==='chip-'+key));renderSubgroupTable(key);}
+function renderSubgroupTable(key){uActiveCombo=key;const rows=uAllResults[key];const gcols=rows[0].cols;let hHtml='<tr>';gcols.forEach(c=>{hHtml+='<th>'+esc(c)+'</th>';});hHtml+='<th>N</th><th>Sn</th><th>Sp</th><th>PPV</th><th>NPV</th><th>Acc</th><th>LR+</th><th>LR−</th><th>J</th><th>DOR</th><th>κ</th></tr>';document.getElementById('sgHead').innerHTML=hHtml;const p2=v=>isFinite(v)?(v*100).toFixed(1)+'%':'—',d2=v=>isFinite(v)?v.toFixed(2):'—',d3=v=>isFinite(v)?v.toFixed(3):'—';let bHtml='';rows.forEach(r=>{const lCells=gcols.length===1?'<td>'+esc(r.label)+'</td>':(r.vals||[]).map(v=>'<td>'+esc(v)+'</td>').join('');bHtml+='<tr>'+lCells+'<td>'+r.n+'</td><td>'+p2(r.sn)+'</td><td>'+p2(r.sp)+'</td><td>'+p2(r.ppv)+'</td><td>'+p2(r.npv)+'</td><td>'+p2(r.acc)+'</td><td>'+d2(r.lrp)+'</td><td>'+d3(r.lrn)+'</td><td>'+d3(r.j)+'</td><td>'+(isFinite(r.dor)?r.dor.toFixed(1):'∞')+'</td><td title="'+kappaLabelZH(r.kap)+'">'+d3(r.kap)+'</td></tr>';});if(uOverall){const ov=uOverall;const ovCells=gcols.map(()=>'<td style="color:var(--muted);font-style:italic">全部</td>').join('');bHtml+='<tr class="ov-row">'+ovCells+'<td><strong>'+ov.n+'</strong></td><td><strong>'+p2(ov.sn)+'</strong></td><td><strong>'+p2(ov.sp)+'</strong></td><td><strong>'+p2(ov.ppv)+'</strong></td><td><strong>'+p2(ov.npv)+'</strong></td><td><strong>'+p2(ov.acc)+'</strong></td><td><strong>'+d2(ov.lrp)+'</strong></td><td><strong>'+d3(ov.lrn)+'</strong></td><td><strong>'+d3(ov.j)+'</strong></td><td><strong>'+(isFinite(ov.dor)?ov.dor.toFixed(1):'∞')+'</strong></td><td><strong>'+d3(ov.kap)+'</strong></td></tr>';}document.getElementById('sgBody').innerHTML=bHtml;}
+function showResTab(t){document.querySelectorAll('.rtab').forEach(el=>el.classList.toggle('on',el.id==='rtab-'+t));document.getElementById('rpane-overall').classList.toggle('hidden',t!=='overall');document.getElementById('rpane-subgroup').classList.toggle('hidden',t!=='subgroup');}
+
+function copyUResults(){if(!uOverall)return;const r=uOverall;const p2=v=>isFinite(v)?(v*100).toFixed(1)+'%':'—';const d3=v=>isFinite(v)?v.toFixed(3):'—';let txt='=== 整體 2×2 列聯表 ===\nTP='+r.tp+'  FP='+r.fp+'\nFN='+r.fn+'  TN='+r.tn+'\nN='+r.n+'\n\n=== 整體診斷指標 ===\nSensitivity : '+p2(r.sn)+'\nSpecificity : '+p2(r.sp)+'\nPPV         : '+p2(r.ppv)+'\nNPV         : '+p2(r.npv)+'\nAccuracy    : '+p2(r.acc)+'\nLR+         : '+(isFinite(r.lrp)?r.lrp.toFixed(2):'∞')+'\nLR-         : '+d3(r.lrn)+"\nYouden's J  : "+d3(r.j)+'\nDOR         : '+(isFinite(r.dor)?r.dor.toFixed(1):'∞')+"\nCohen's κ   : "+d3(r.kap)+'  ('+kappaLabelZH(r.kap)+')\n';if(uActiveCombo&&uAllResults[uActiveCombo]){txt+='\n=== 分組比較：'+uActiveCombo+' ===\n';uAllResults[uActiveCombo].forEach(sg=>{txt+='\n['+sg.label+']  N='+sg.n+'\n  Sn='+p2(sg.sn)+'  Sp='+p2(sg.sp)+'  PPV='+p2(sg.ppv)+'  NPV='+p2(sg.npv)+'  Acc='+p2(sg.acc)+'  LR+='+d3(sg.lrp)+'  LR-='+d3(sg.lrn)+'  J='+d3(sg.j)+'  κ='+d3(sg.kap)+'\n';});}navigator.clipboard.writeText(txt).then(()=>showToast('已複製到剪貼簿',true)).catch(()=>alert(txt));}
+
+document.addEventListener('DOMContentLoaded',function(){initChart();mcalc();});
 </script>
 </body>
 </html>
